@@ -85,3 +85,7 @@ export { pluginWebhookDeliveries } from "./plugin_webhooks.js";
 export { pluginLogs } from "./plugin_logs.js";
 export { watchlistTickers } from "./watchlist_tickers.js";
 export { researchReports } from "./research_reports.js";
+export { alertRules } from "./alert_rules.js";
+export { alertEvents } from "./alert_events.js";
+export { brokerConnections } from "./broker_connections.js";
+export { subscriptions } from "./subscriptions.js";
