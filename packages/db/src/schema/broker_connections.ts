@@ -7,9 +7,10 @@ export const brokerConnections = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
     broker: text("broker").notNull(),
+    // All token columns are encrypted at the application layer before storage (AES-256)
     credentialsEncrypted: text("credentials_encrypted"),
-    accessToken: text("access_token"),
-    refreshToken: text("refresh_token"),
+    accessTokenEncrypted: text("access_token_encrypted"),
+    refreshTokenEncrypted: text("refresh_token_encrypted"),
     tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
     lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
     active: boolean("active").notNull().default(true),
