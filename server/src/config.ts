@@ -45,6 +45,9 @@ if (!isSameFile && existsSync(CWD_ENV_PATH)) {
 
 maybeRepairLegacyWorktreeConfigAndEnvFiles();
 
+export const STOCKPILOT_MODE = (process.env.STOCKPILOT_MODE ?? 'selfhost') as 'selfhost' | 'cloud'
+export const isCloudMode = STOCKPILOT_MODE === 'cloud'
+
 const TAILSCALE_DETECT_TIMEOUT_MS = 3000;
 
 type DatabaseMode = "embedded-postgres" | "postgres";
@@ -87,6 +90,8 @@ export interface Config {
   heartbeatSchedulerIntervalMs: number;
   companyDeletionEnabled: boolean;
   telemetryEnabled: boolean;
+  stockpilotMode: 'selfhost' | 'cloud';
+  isCloudMode: boolean;
 }
 
 function detectTailnetBindHost(): string | undefined {
@@ -333,5 +338,7 @@ export function loadConfig(): Config {
     heartbeatSchedulerIntervalMs: Math.max(10000, Number(process.env.HEARTBEAT_SCHEDULER_INTERVAL_MS) || 30000),
     companyDeletionEnabled,
     telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
+    stockpilotMode: STOCKPILOT_MODE,
+    isCloudMode,
   };
 }
