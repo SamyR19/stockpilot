@@ -3,6 +3,17 @@ import { MarketDataError } from '../types.js'
 
 const BASE_URL = 'https://api.polygon.io'
 
+const TICKER_REGEX = /^[A-Z0-9.\-^=]{1,20}$/i
+
+function validateTicker(ticker: string, provider: 'polygon'): void {
+  if (!ticker || ticker.trim().length === 0) {
+    throw new MarketDataError('Ticker cannot be empty', provider)
+  }
+  if (!TICKER_REGEX.test(ticker)) {
+    throw new MarketDataError(`Invalid ticker format: ${ticker}`, provider, ticker)
+  }
+}
+
 export class PolygonProvider implements IMarketDataProvider {
   readonly name = 'polygon' as const
 
@@ -20,6 +31,7 @@ export class PolygonProvider implements IMarketDataProvider {
   }
 
   async getQuote(ticker: string): Promise<StockQuote> {
+    validateTicker(ticker, 'polygon')
     const t = ticker.toUpperCase()
     const data = await this.apiFetch<any>(`/v2/aggs/ticker/${t}/prev`, { adjusted: 'true' })
     const result = data.results?.[0]
@@ -42,6 +54,7 @@ export class PolygonProvider implements IMarketDataProvider {
   }
 
   async getNews(ticker: string, limit = 10): Promise<NewsItem[]> {
+    validateTicker(ticker, 'polygon')
     const t = ticker.toUpperCase()
     const data = await this.apiFetch<any>('/v2/reference/news', {
       ticker: t,
@@ -61,6 +74,7 @@ export class PolygonProvider implements IMarketDataProvider {
   }
 
   async getHistory(ticker: string, fromDate: Date, toDate: Date): Promise<HistoricalPrice[]> {
+    validateTicker(ticker, 'polygon')
     const t = ticker.toUpperCase()
     const from = fromDate.toISOString().slice(0, 10)
     const to = toDate.toISOString().slice(0, 10)
