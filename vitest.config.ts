@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     projects: [
+      "packages/feature-flags",
       "packages/shared",
       "packages/skills-catalog",
       "packages/db",
