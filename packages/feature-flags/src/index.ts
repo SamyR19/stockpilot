@@ -20,6 +20,7 @@ export function getUserTier(subscriptionStatus: SubscriptionStatus): UserTier {
   if (isSelfHost()) return 'selfhost'
   if (subscriptionStatus === 'active') return 'subscription'
   if (subscriptionStatus === 'keys') return 'keys'
+  // past_due and canceled intentionally collapse to free — no access until renewed
   return 'free'
 }
 

@@ -78,6 +78,18 @@ describe('feature-flags', () => {
       process.env.STOCKPILOT_MODE = 'cloud'
       expect(getUserTier('keys')).toBe('keys')
     })
+
+    it('returns free when subscription status is past_due in cloud mode', async () => {
+      process.env.STOCKPILOT_MODE = 'cloud'
+      const { getUserTier } = await import('./index.js')
+      expect(getUserTier('past_due')).toBe('free')
+    })
+
+    it('returns free when subscription status is canceled in cloud mode', async () => {
+      process.env.STOCKPILOT_MODE = 'cloud'
+      const { getUserTier } = await import('./index.js')
+      expect(getUserTier('canceled')).toBe('free')
+    })
   })
 
   describe('canUseRole()', () => {
@@ -91,6 +103,12 @@ describe('feature-flags', () => {
 
     it('canUseRole("equity-analyst", "subscription") returns true', () => {
       expect(canUseRole('equity-analyst', 'subscription')).toBe(true)
+    })
+
+    it('allows all roles in selfhost tier', () => {
+      expect(canUseRole('equity-analyst', 'selfhost')).toBe(true)
+      expect(canUseRole('risk-manager', 'selfhost')).toBe(true)
+      expect(canUseRole('news-sentinel', 'selfhost')).toBe(true)
     })
   })
 })
