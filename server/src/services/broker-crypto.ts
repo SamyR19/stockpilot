@@ -7,11 +7,19 @@ function loadMasterKey(): Buffer {
   if (raw && raw.trim().length > 0) {
     const trimmed = raw.trim()
     if (/^[A-Fa-f0-9]{64}$/.test(trimmed)) return Buffer.from(trimmed, 'hex')
-    const decoded = Buffer.from(trimmed, 'base64')
-    if (decoded.length === 32) return decoded
+    try {
+      const decoded = Buffer.from(trimmed, 'base64')
+      if (decoded.length === 32) return decoded
+    } catch {
+      // not valid base64, fall through
+    }
     if (Buffer.byteLength(trimmed, 'utf8') === 32) return Buffer.from(trimmed, 'utf8')
+    // env var was set but didn't decode to 32 bytes — throw rather than silently using dev key
+    throw new Error(
+      'Invalid PAPERCLIP_SECRETS_MASTER_KEY for broker tokens (expected 32-byte base64, 64-char hex, or raw 32-char string)',
+    )
   }
-  // In dev/test, derive a stable key from a fixed seed so tests work without env vars
+  // No key configured — use stable dev/test key (zero env var = intentional dev mode)
   return Buffer.alloc(32, 0x42)
 }
 
@@ -27,7 +35,9 @@ export function encryptToken(plaintext: string): string {
 
 export function decryptToken(encrypted: string): string {
   const parts = encrypted.split(':')
-  if (parts.length !== 3) throw new Error('Invalid encrypted token format')
+  if (parts.length !== 3 || parts[0].length === 0 || parts[1].length === 0) {
+    throw new Error('Invalid encrypted token format')
+  }
   const [ivB64, tagB64, ctB64] = parts
   const key = loadMasterKey()
   const iv = Buffer.from(ivB64, 'base64')
