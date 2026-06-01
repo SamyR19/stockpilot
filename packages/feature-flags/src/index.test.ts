@@ -5,6 +5,7 @@ import {
   isSelfHost,
   getUserTier,
   canUseRole,
+  canUseDataProvider,
 } from './index.js'
 
 describe('feature-flags', () => {
@@ -110,5 +111,21 @@ describe('feature-flags', () => {
       expect(canUseRole('risk-manager', 'selfhost')).toBe(true)
       expect(canUseRole('news-sentinel', 'selfhost')).toBe(true)
     })
+  })
+})
+
+describe('canUseDataProvider', () => {
+  it('allows yahoo-finance on every tier', () => {
+    for (const tier of ['selfhost', 'free', 'keys', 'subscription'] as const) {
+      expect(canUseDataProvider('yahoo-finance', tier)).toBe(true)
+    }
+  })
+  it('restricts alpha-vantage and polygon to non-free tiers', () => {
+    expect(canUseDataProvider('alpha-vantage', 'free')).toBe(false)
+    expect(canUseDataProvider('polygon', 'free')).toBe(false)
+    for (const tier of ['selfhost', 'keys', 'subscription'] as const) {
+      expect(canUseDataProvider('alpha-vantage', tier)).toBe(true)
+      expect(canUseDataProvider('polygon', tier)).toBe(true)
+    }
   })
 })
