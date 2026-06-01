@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 // Stub the services so we don't need a real DB or Schwab
 vi.mock('../services/broker-connections.js', () => ({

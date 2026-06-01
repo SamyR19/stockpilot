@@ -91,6 +91,7 @@ export function createBrokerRouter(db: Db, config: BrokerRouterConfig = {}): Rou
     if (!code || !state || !companyId) {
       return res.status(400).json({ error: 'Missing code, state, or companyId' })
     }
+    assertCompanyAccess(req, companyId)
     if (!schwabClient) {
       return res.status(503).json({ error: 'Schwab integration not configured' })
     }
