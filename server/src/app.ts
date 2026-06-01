@@ -44,6 +44,8 @@ import { adapterRoutes } from "./routes/adapters.js";
 import { pluginUiStaticRoutes } from "./routes/plugin-ui-static.js";
 import { createMarketRouter } from "./routes/market.js";
 import { createBrokerRouter } from "./routes/broker.js";
+import { createWatchlistRouter } from "./routes/watchlist.js";
+import { createAlertsRouter } from "./routes/alerts.js";
 import { loadConfig } from "./config.js";
 import { readBrandedStaticIndexHtml } from "./static-index-html.js";
 import { applyUiBranding } from "./ui-branding.js";
@@ -318,6 +320,8 @@ export async function createApp(
     schwabClientSecret: appConfig.schwabClientSecret,
     schwabRedirectUri: appConfig.schwabRedirectUri,
   }));
+  api.use('/watchlist', createWatchlistRouter(db))
+  api.use('/alerts', createAlertsRouter(db))
   api.use(adapterRoutes());
   api.use(
     accessRoutes(db, {
