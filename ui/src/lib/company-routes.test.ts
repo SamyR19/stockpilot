@@ -35,4 +35,13 @@ describe("company routes", () => {
     expect(applyCompanyPrefix("/search?q=hello%20world", "PAP")).toBe("/PAP/search?q=hello%20world");
     expect(toCompanyRelativePath("/PAP/search?q=foo")).toBe("/search?q=foo");
   });
+
+  it("treats finance pages as board routes that need a company prefix", () => {
+    for (const route of ["portfolio", "watchlist", "alerts", "market"]) {
+      expect(isBoardPathWithoutPrefix(`/${route}`)).toBe(true);
+      expect(extractCompanyPrefixFromPath(`/${route}`)).toBeNull();
+      expect(applyCompanyPrefix(`/${route}`, "PAP")).toBe(`/PAP/${route}`);
+      expect(toCompanyRelativePath(`/PAP/${route}`)).toBe(`/${route}`);
+    }
+  });
 });

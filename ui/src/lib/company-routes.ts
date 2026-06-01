@@ -19,6 +19,10 @@ const BOARD_ROUTE_ROOTS = new Set([
   "u",
   "design-guide",
   "search",
+  "portfolio",
+  "watchlist",
+  "alerts",
+  "market",
 ]);
 
 const GLOBAL_ROUTE_ROOTS = new Set(["auth", "invite", "board-claim", "cli-auth", "docs", "instance"]);
