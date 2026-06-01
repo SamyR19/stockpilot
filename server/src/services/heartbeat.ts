@@ -151,6 +151,9 @@ import {
 } from "./recovery/model-profile-hint.js";
 import { recoveryService } from "./recovery/service.js";
 import { productivityReviewService } from "./productivity-review.js";
+import { createRunLimitService, assertRunAllowed } from "./run-limit.js";
+import { createSubscriptionService } from "./subscription.js";
+import { isCloudMode } from "../config.js";
 import { withAgentStartLock } from "./agent-start-lock.js";
 import {
   redactCurrentUserText,
@@ -2531,6 +2534,8 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     cancelWorkForScope: cancelBudgetScopeWork,
   };
   const budgets = budgetService(db, budgetHooks);
+  const runLimits = createRunLimitService(db);
+  const subscriptions = createSubscriptionService(db, { isCloudMode });
   const recovery = recoveryService(db, { enqueueWakeup });
   const productivityReviews = productivityReviewService(db, { enqueueWakeup });
   let unsafeTextProjectionPromise: Promise<boolean> | null = null;
@@ -9005,6 +9010,11 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     const agent = await getAgent(agentId);
     if (!agent) throw notFound("Agent not found");
+    // Enforce the subscription tier's monthly run cap before queueing a run.
+    // No-op for selfhost mode and for non-free tiers (canStartRun returns allowed);
+    // only free-tier cloud companies over their cap are blocked (RunLimitError → HTTP 402).
+    const tier = await subscriptions.tierForCompany(agent.companyId);
+    assertRunAllowed(await runLimits.canStartRun(agent.companyId, tier));
     const explicitResumeSession = await resolveExplicitResumeSessionOverride(agent, payload, taskKey);
     if (explicitResumeSession) {
       enrichedContextSnapshot.resumeFromRunId = explicitResumeSession.resumeFromRunId;

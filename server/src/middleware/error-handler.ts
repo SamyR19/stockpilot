@@ -62,6 +62,15 @@ export function errorHandler(
     return;
   }
 
+  // Typed errors that carry an explicit HTTP statusCode (e.g. RunLimitError → 402).
+  if (
+    err instanceof Error &&
+    typeof (err as { statusCode?: unknown }).statusCode === "number"
+  ) {
+    res.status((err as unknown as { statusCode: number }).statusCode).json({ error: err.message });
+    return;
+  }
+
   const rootError = err instanceof Error ? err : new Error(String(err));
   attachErrorContext(
     req,

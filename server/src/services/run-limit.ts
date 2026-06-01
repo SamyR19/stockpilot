@@ -48,3 +48,17 @@ export function createRunLimitService(db: Db): RunLimitService {
 
   return { monthlyRunCount, canStartRun }
 }
+
+export class RunLimitError extends Error {
+  readonly statusCode = 402 // Payment Required
+  constructor(message: string) {
+    super(message)
+    this.name = 'RunLimitError'
+  }
+}
+
+export function assertRunAllowed(decision: RunLimitDecision): void {
+  if (!decision.allowed) {
+    throw new RunLimitError(decision.reason ?? 'Run not allowed for the current plan tier')
+  }
+}
