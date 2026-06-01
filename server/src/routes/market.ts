@@ -1,22 +1,41 @@
 import { Router } from 'express'
 import { z } from 'zod'
+import rateLimit from 'express-rate-limit'
 import { MarketDataClient } from '@stockpilotai/market-data'
-import { loadConfig } from '../config.js'
 import { logger } from '../middleware/logger.js'
+import { assertAuthenticated } from './authz.js'
 
 const TICKER_REGEX = /^[A-Z0-9.\-^=]{1,20}$/i
 const tickerSchema = z.string().regex(TICKER_REGEX, 'Invalid ticker symbol')
 
-function getMarketClient(): MarketDataClient {
-  const config = loadConfig()
-  return new MarketDataClient({
+const marketRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+})
+
+export function createMarketRouter(config: { alphaVantageApiKey?: string; polygonApiKey?: string }): Router {
+  const router = Router()
+
+  const client = new MarketDataClient({
     alphaVantageApiKey: config.alphaVantageApiKey,
     polygonApiKey: config.polygonApiKey,
   })
-}
 
-export function createMarketRouter(): Router {
-  const router = Router()
+  // Auth guard — reject unauthenticated requests
+  router.use((req, res, next) => {
+    try {
+      assertAuthenticated(req)
+      next()
+    } catch (err) {
+      next(err)
+    }
+  })
+
+  // Rate limiting
+  router.use(marketRateLimit)
 
   // GET /api/market/quote/:ticker
   router.get('/quote/:ticker', async (req, res) => {
@@ -25,11 +44,10 @@ export function createMarketRouter(): Router {
       return res.status(400).json({ error: 'Invalid ticker symbol' })
     }
     try {
-      const client = getMarketClient()
       const quote = await client.getQuote(parse.data.toUpperCase())
       return res.json(quote)
     } catch (err) {
-      logger.error({ err, ticker: req.params.ticker }, 'Failed to fetch quote')
+      logger.error({ err, ticker: parse.data }, 'Failed to fetch quote')
       return res.status(502).json({ error: 'Failed to fetch market data' })
     }
   })
@@ -42,11 +60,10 @@ export function createMarketRouter(): Router {
     }
     const limit = Math.min(parseInt(String(req.query.limit ?? '10'), 10) || 10, 50)
     try {
-      const client = getMarketClient()
       const news = await client.getNews(parse.data.toUpperCase(), limit)
       return res.json(news)
     } catch (err) {
-      logger.error({ err, ticker: req.params.ticker }, 'Failed to fetch news')
+      logger.error({ err, ticker: parse.data }, 'Failed to fetch news')
       return res.status(502).json({ error: 'Failed to fetch news' })
     }
   })
@@ -65,11 +82,10 @@ export function createMarketRouter(): Router {
       return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' })
     }
     try {
-      const client = getMarketClient()
       const history = await client.getHistory(parse.data.toUpperCase(), fromDate, toDate)
       return res.json(history)
     } catch (err) {
-      logger.error({ err, ticker: req.params.ticker }, 'Failed to fetch history')
+      logger.error({ err, ticker: parse.data }, 'Failed to fetch history')
       return res.status(502).json({ error: 'Failed to fetch price history' })
     }
   })
@@ -89,19 +105,12 @@ export function createMarketRouter(): Router {
       return res.status(400).json({ error: 'No valid tickers provided' })
     }
     try {
-      const client = getMarketClient()
       const calendar = await client.getEarningsCalendar(tickers)
       return res.json(calendar)
     } catch (err) {
       logger.error({ err }, 'Failed to fetch earnings calendar')
       return res.status(502).json({ error: 'Failed to fetch earnings calendar' })
     }
-  })
-
-  // GET /api/market/providers
-  router.get('/providers', (_req, res) => {
-    const client = getMarketClient()
-    return res.json({ providers: client.availableProviders })
   })
 
   return router
