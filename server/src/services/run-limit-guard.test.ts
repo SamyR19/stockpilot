@@ -13,4 +13,12 @@ describe('assertRunAllowed', () => {
   it('does nothing when allowed', () => {
     expect(() => assertRunAllowed({ allowed: true })).not.toThrow()
   })
+  it('carries used/limit from the decision onto the error', () => {
+    try { assertRunAllowed({ allowed: false, reason: 'x', used: 7, limit: 5 }); throw new Error('should have thrown') }
+    catch (e) {
+      expect(e).toBeInstanceOf(RunLimitError)
+      expect((e as RunLimitError).used).toBe(7)
+      expect((e as RunLimitError).limit).toBe(5)
+    }
+  })
 })

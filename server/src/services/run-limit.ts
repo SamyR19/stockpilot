@@ -51,14 +51,21 @@ export function createRunLimitService(db: Db): RunLimitService {
 
 export class RunLimitError extends Error {
   readonly statusCode = 402 // Payment Required
-  constructor(message: string) {
+  readonly used?: number
+  readonly limit?: number
+  constructor(message: string, opts?: { used?: number; limit?: number }) {
     super(message)
     this.name = 'RunLimitError'
+    this.used = opts?.used
+    this.limit = opts?.limit
   }
 }
 
 export function assertRunAllowed(decision: RunLimitDecision): void {
   if (!decision.allowed) {
-    throw new RunLimitError(decision.reason ?? 'Run not allowed for the current plan tier')
+    throw new RunLimitError(decision.reason ?? 'Run not allowed for the current plan tier', {
+      used: decision.used,
+      limit: decision.limit,
+    })
   }
 }

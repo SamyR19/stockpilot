@@ -1048,6 +1048,14 @@ interface WakeupOptions {
   requestedByActorType?: "user" | "agent" | "system";
   requestedByActorId?: string | null;
   contextSnapshot?: Record<string, unknown>;
+  /**
+   * Bypass the subscription run-limit cap for this enqueue. Set on
+   * system-internal wakeups (liveness continuation, recovery, handoff,
+   * dependent-task scheduling, heartbeat timer) so an agent at a free-tier
+   * company's cap is never stalled mid-work. Only genuinely user/externally
+   * initiated runs leave this unset and are subject to the cap.
+   */
+  skipRunLimitCheck?: boolean;
 }
 
 type UsageTotals = {
@@ -2939,6 +2947,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           source: "automation",
           triggerDetail: "system",
           reason: "issue_monitor_recovery_issue",
+          skipRunLimitCheck: true,
           idempotencyKey: `issue-monitor-recovery-issue:${input.claimed.id}:${input.clearReason}:${input.scheduledAtIso}`,
           payload: withRecoveryModelProfileHint({ issueId: recoveryIssue.id, sourceIssueId: input.claimed.id }, "status_only"),
           requestedByActorType: input.actorType,
@@ -3000,6 +3009,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       source: "automation",
       triggerDetail: "system",
       reason: "issue_monitor_recovery",
+      skipRunLimitCheck: true,
       idempotencyKey: `issue-monitor-recovery:${input.claimed.id}:${input.clearReason}:${input.scheduledAtIso}`,
       payload: withRecoveryModelProfileHint({
         issueId: input.claimed.id,
@@ -3158,6 +3168,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         source: input.source,
         triggerDetail: input.triggerDetail,
         reason: input.wakeReason,
+        skipRunLimitCheck: true,
         idempotencyKey: `issue-monitor:${claimed.id}:${scheduledAtIso}`,
         payload: {
           issueId: claimed.id,
@@ -4190,6 +4201,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       source: "automation",
       triggerDetail: "system",
       reason: RUN_LIVENESS_CONTINUATION_REASON,
+      skipRunLimitCheck: true,
       payload: decision.payload,
       contextSnapshot: decision.contextSnapshot,
       idempotencyKey: decision.idempotencyKey,
@@ -4454,6 +4466,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       source: "automation",
       triggerDetail: "system",
       reason: FINISH_SUCCESSFUL_RUN_HANDOFF_REASON,
+      skipRunLimitCheck: true,
       payload: decision.payload,
       contextSnapshot: decision.contextSnapshot,
       idempotencyKey: decision.idempotencyKey,
@@ -8350,6 +8363,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
                   source: "automation",
                   triggerDetail: "system",
                   reason: "issue_blockers_resolved",
+                  skipRunLimitCheck: true,
                   payload: {
                     issueId: dependent.id,
                     resolvedBlockerIssueId: issueId,
@@ -9013,8 +9027,10 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     // Enforce the subscription tier's monthly run cap before queueing a run.
     // No-op for selfhost mode and for non-free tiers (canStartRun returns allowed);
     // only free-tier cloud companies over their cap are blocked (RunLimitError → HTTP 402).
-    const tier = await subscriptions.tierForCompany(agent.companyId);
-    assertRunAllowed(await runLimits.canStartRun(agent.companyId, tier));
+    if (!opts.skipRunLimitCheck) {
+      const tier = await subscriptions.tierForCompany(agent.companyId);
+      assertRunAllowed(await runLimits.canStartRun(agent.companyId, tier));
+    }
     const explicitResumeSession = await resolveExplicitResumeSessionOverride(agent, payload, taskKey);
     if (explicitResumeSession) {
       enrichedContextSnapshot.resumeFromRunId = explicitResumeSession.resumeFromRunId;
@@ -10224,6 +10240,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           source: "timer",
           triggerDetail: "system",
           reason: "heartbeat_timer",
+          skipRunLimitCheck: true,
           requestedByActorType: "system",
           requestedByActorId: "heartbeat_scheduler",
           contextSnapshot: {

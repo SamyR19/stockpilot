@@ -62,13 +62,19 @@ export function errorHandler(
     return;
   }
 
-  // Typed errors that carry an explicit HTTP statusCode (e.g. RunLimitError → 402).
+  // Typed errors that carry an explicit 4xx HTTP statusCode (e.g. RunLimitError → 402,
+  // role/api-key 403). Only intentional client errors short-circuit here; 5xx (or any
+  // statusCode outside 4xx) falls through to the default handler below so unexpected
+  // server errors are still logged/tracked via telemetry.
   if (
     err instanceof Error &&
     typeof (err as { statusCode?: unknown }).statusCode === "number"
   ) {
-    res.status((err as unknown as { statusCode: number }).statusCode).json({ error: err.message });
-    return;
+    const statusCode = (err as unknown as { statusCode: number }).statusCode;
+    if (statusCode >= 400 && statusCode < 500) {
+      res.status(statusCode).json({ error: err.message });
+      return;
+    }
   }
 
   const rootError = err instanceof Error ? err : new Error(String(err));
