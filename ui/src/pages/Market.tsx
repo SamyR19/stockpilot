@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { BarChart2, Search, TrendingUp, TrendingDown, ExternalLink } from "lucide-react"
 import { useCompany } from "../context/CompanyContext"
@@ -44,8 +44,8 @@ function PriceChart({ prices }: { prices: HistoricalPrice[] }) {
 }
 
 function QuoteCard({ ticker }: { ticker: string }) {
-  const today = new Date().toISOString().slice(0, 10)
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
+  const thirtyDaysAgo = useMemo(() => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), [])
 
   const { data: quote, isLoading: quoteLoading, error: quoteError } = useQuery({
     queryKey: queryKeys.market.quote(ticker),
@@ -102,9 +102,9 @@ function QuoteCard({ ticker }: { ticker: string }) {
         <div>
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recent News</h3>
           <div className="border border-border divide-y divide-border overflow-hidden">
-            {news.map((item, i) => (
+            {news.map((item) => (
               <a
-                key={i}
+                key={item.url}
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"

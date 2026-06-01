@@ -28,12 +28,12 @@ function AlertRow({ rule, onDelete, onToggle }: { rule: AlertRule; onDelete: () 
         </Badge>
       </div>
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon-sm" onClick={onToggle} title={rule.active ? "Disable alert" : "Enable alert"}>
+        <Button variant="ghost" size="icon-sm" onClick={onToggle} title={rule.active ? "Disable alert" : "Enable alert"} aria-label={rule.active ? `Disable alert for ${rule.ticker}` : `Enable alert for ${rule.ticker}`}>
           {rule.active
             ? <ToggleRight className="h-4 w-4 text-green-500" />
             : <ToggleLeft className="h-4 w-4 text-muted-foreground" />}
         </Button>
-        <Button variant="ghost" size="icon-sm" onClick={onDelete} className="text-muted-foreground hover:text-destructive">
+        <Button variant="ghost" size="icon-sm" onClick={onDelete} aria-label={`Delete alert for ${rule.ticker}`} className="text-muted-foreground hover:text-destructive">
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
@@ -89,9 +89,15 @@ export function Alerts() {
   function handleCreate() {
     const t = ticker.trim().toUpperCase()
     if (!TICKER_RE.test(t)) { setFormError("Invalid ticker symbol"); return }
-    if (NEEDS_THRESHOLD.includes(conditionType) && !threshold.trim()) {
-      setFormError("Threshold value is required for this condition type")
-      return
+    if (NEEDS_THRESHOLD.includes(conditionType)) {
+      if (!threshold.trim()) {
+        setFormError("Threshold value is required for this condition type")
+        return
+      }
+      if (!isFinite(Number(threshold)) || Number(threshold) <= 0) {
+        setFormError("Threshold must be a positive number")
+        return
+      }
     }
     createMutation.mutate()
   }

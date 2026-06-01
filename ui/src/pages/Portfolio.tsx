@@ -28,7 +28,7 @@ function ConnectionCard({ conn, onDisconnect }: { conn: BrokerConnection; onDisc
           {conn.lastSyncedAt ? `Last synced ${new Date(conn.lastSyncedAt).toLocaleDateString()}` : "Never synced"}
         </p>
       </div>
-      <Button variant="ghost" size="sm" onClick={onDisconnect} className="text-destructive hover:text-destructive">
+      <Button variant="ghost" size="sm" onClick={onDisconnect} aria-label={`Disconnect ${conn.broker}`} className="text-destructive hover:text-destructive">
         <Trash2 className="h-4 w-4" />
       </Button>
     </div>
@@ -87,6 +87,7 @@ export function Portfolio() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [csvHoldings, setCsvHoldings] = useState<PortfolioHolding[]>([])
   const [csvUploading, setCsvUploading] = useState(false)
+  const [csvError, setCsvError] = useState<string | null>(null)
 
   useEffect(() => {
     setBreadcrumbs([{ label: "Portfolio" }])
@@ -115,11 +116,12 @@ export function Portfolio() {
 
   async function handleConnectSchwab() {
     if (!selectedCompanyId) return
+    const win = window.open("", "_blank", "noopener,noreferrer")
     try {
       const { url } = await brokerApi.getSchwabAuthUrl(selectedCompanyId)
-      window.open(url, "_blank", "noopener,noreferrer")
+      if (win) win.location.href = url
     } catch {
-      // silently fail
+      if (win) win.close()
     }
   }
 
@@ -127,11 +129,12 @@ export function Portfolio() {
     const file = e.target.files?.[0]
     if (!file || !selectedCompanyId) return
     setCsvUploading(true)
+    setCsvError(null)
     try {
       const result = await brokerApi.importCsv(selectedCompanyId, file)
       setCsvHoldings(result)
     } catch {
-      // silently fail
+      setCsvError("Failed to import CSV. Please check the file format and try again.")
     } finally {
       setCsvUploading(false)
       if (fileRef.current) fileRef.current.value = ""
@@ -155,10 +158,13 @@ export function Portfolio() {
         </div>
         <div className="flex gap-2">
           <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
-          <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={csvUploading}>
-            <Upload className="h-4 w-4 mr-1.5" />
-            {csvUploading ? "Importing…" : "Import CSV"}
-          </Button>
+          <div>
+            <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={csvUploading}>
+              <Upload className="h-4 w-4 mr-1.5" />
+              {csvUploading ? "Importing…" : "Import CSV"}
+            </Button>
+            {csvError && <p className="text-sm text-destructive mt-1">{csvError}</p>}
+          </div>
           <Button variant="outline" size="sm" onClick={handleConnectSchwab}>
             <Plug className="h-4 w-4 mr-1.5" />
             Connect Schwab
@@ -179,7 +185,14 @@ export function Portfolio() {
         </div>
       )}
 
-      {allHoldings.length > 0 ? (
+      {(connections?.length ?? 0) === 0 ? (
+        <EmptyState
+          icon={TrendingUp}
+          message="No broker connected. Click 'Connect Schwab' to link your account, or import a CSV."
+        />
+      ) : holdingsLoading ? (
+        <p className="text-sm text-muted-foreground">Loading holdings…</p>
+      ) : allHoldings.length > 0 ? (
         <div>
           <div className="flex items-center justify-between mb-3">
             <span />
@@ -190,13 +203,6 @@ export function Portfolio() {
           </div>
           <HoldingsTable holdings={allHoldings} />
         </div>
-      ) : (connections?.length ?? 0) === 0 ? (
-        <EmptyState
-          icon={TrendingUp}
-          message="No broker connected. Click 'Connect Schwab' to link your account, or import a CSV."
-        />
-      ) : holdingsLoading ? (
-        <PageSkeleton />
       ) : (
         <EmptyState icon={TrendingUp} message="No holdings found in connected accounts." />
       )}

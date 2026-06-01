@@ -43,7 +43,7 @@ function TickerRow({ item, onRemove }: { item: WatchlistTicker; onRemove: () => 
       </div>
       <div className="flex items-center gap-3">
         {item.notes && <span className="text-xs text-muted-foreground hidden sm:block">{item.notes}</span>}
-        <Button variant="ghost" size="icon-sm" onClick={onRemove} className="text-muted-foreground hover:text-destructive">
+        <Button variant="ghost" size="icon-sm" onClick={onRemove} aria-label={`Remove ${item.ticker} from watchlist`} className="text-muted-foreground hover:text-destructive">
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
