@@ -12,6 +12,10 @@ import {
   Repeat,
   GitBranch,
   Settings,
+  TrendingUp,
+  Eye,
+  Bell,
+  BarChart2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/lib/router";
@@ -118,6 +122,13 @@ export function Sidebar() {
         <SidebarProjects />
 
         <SidebarAgents />
+
+        <SidebarSection label="Finance">
+          <SidebarNavItem to="/portfolio" label="Portfolio" icon={TrendingUp} />
+          <SidebarNavItem to="/watchlist" label="Watchlist" icon={Eye} />
+          <SidebarNavItem to="/alerts" label="Alerts" icon={Bell} />
+          <SidebarNavItem to="/market" label="Market" icon={BarChart2} />
+        </SidebarSection>
 
         <SidebarSection label="Company">
           <SidebarNavItem to="/org" label="Org" icon={Network} />

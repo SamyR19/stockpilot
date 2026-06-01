@@ -58,6 +58,10 @@ import { CliAuthPage } from "./pages/CliAuth";
 import { InviteLandingPage } from "./pages/InviteLanding";
 import { JoinRequestQueue } from "./pages/JoinRequestQueue";
 import { NotFoundPage } from "./pages/NotFound";
+import { Portfolio } from "./pages/Portfolio";
+import { Watchlist } from "./pages/Watchlist";
+import { Alerts } from "./pages/Alerts";
+import { Market } from "./pages/Market";
 import { useCompany } from "./context/CompanyContext";
 import { useDialogActions } from "./context/DialogContext";
 import { loadLastInboxTab } from "./lib/inbox";
@@ -145,6 +149,10 @@ function boardRoutes() {
       <Route path="design-guide" element={<DesignGuide />} />
       <Route path="instance/settings/adapters" element={<AdapterManager />} />
       <Route path=":pluginRoutePath/*" element={<PluginPage />} />
+      <Route path="portfolio" element={<Portfolio />} />
+      <Route path="watchlist" element={<Watchlist />} />
+      <Route path="alerts" element={<Alerts />} />
+      <Route path="market" element={<Market />} />
       <Route path="*" element={<NotFoundPage scope="board" />} />
     </>
   );
