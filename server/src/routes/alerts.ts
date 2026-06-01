@@ -9,12 +9,20 @@ import { assertAuthenticated, assertCompanyAccess } from './authz.js'
 
 const TICKER_REGEX = /^[A-Z0-9.\-^=]{1,20}$/i
 
+const NUMERIC_THRESHOLD_CONDITIONS = ['price_above', 'price_below', 'percent_change'] as const
+
 const createAlertSchema = z.object({
   ticker: z.string().regex(TICKER_REGEX, 'Invalid ticker symbol'),
   conditionType: z.enum(ALERT_CONDITION_TYPES),
   threshold: z.string().optional(),
   agentId: z.string().uuid().optional(),
-})
+}).refine((data) => {
+  if (NUMERIC_THRESHOLD_CONDITIONS.includes(data.conditionType as any)) {
+    if (!data.threshold) return false
+    return !isNaN(Number(data.threshold))
+  }
+  return true
+}, { message: 'Threshold must be a numeric value for price/percent conditions' })
 
 export function createAlertsRouter(db: Db): Router {
   const router = Router()
@@ -31,7 +39,7 @@ export function createAlertsRouter(db: Db): Router {
   // GET /api/alerts/:companyId
   router.get('/:companyId', async (req, res) => {
     const { companyId } = req.params
-    try { assertCompanyAccess(req, companyId) } catch { return res.status(403).json({ error: 'Forbidden' }) }
+    assertCompanyAccess(req, companyId)
     const rows = await db
       .select({
         id: alertRules.id,
@@ -50,7 +58,7 @@ export function createAlertsRouter(db: Db): Router {
   // POST /api/alerts/:companyId
   router.post('/:companyId', async (req, res) => {
     const { companyId } = req.params
-    try { assertCompanyAccess(req, companyId) } catch { return res.status(403).json({ error: 'Forbidden' }) }
+    assertCompanyAccess(req, companyId)
     const parse = createAlertSchema.safeParse(req.body)
     if (!parse.success) {
       return res.status(400).json({ error: parse.error.errors[0]?.message ?? 'Invalid input' })
@@ -74,17 +82,19 @@ export function createAlertsRouter(db: Db): Router {
   // DELETE /api/alerts/:companyId/:alertId
   router.delete('/:companyId/:alertId', async (req, res) => {
     const { companyId, alertId } = req.params
-    try { assertCompanyAccess(req, companyId) } catch { return res.status(403).json({ error: 'Forbidden' }) }
-    await db
+    assertCompanyAccess(req, companyId)
+    const deleted = await db
       .delete(alertRules)
       .where(and(eq(alertRules.companyId, companyId), eq(alertRules.id, alertId)))
+      .returning({ id: alertRules.id })
+    if (deleted.length === 0) return res.status(404).json({ error: 'Alert not found' })
     return res.status(204).send()
   })
 
   // PATCH /api/alerts/:companyId/:alertId  body: { active: boolean }
   router.patch('/:companyId/:alertId', async (req, res) => {
     const { companyId, alertId } = req.params
-    try { assertCompanyAccess(req, companyId) } catch { return res.status(403).json({ error: 'Forbidden' }) }
+    assertCompanyAccess(req, companyId)
     const parse = z.object({ active: z.boolean() }).safeParse(req.body)
     if (!parse.success) return res.status(400).json({ error: 'active (boolean) required' })
     const rows = await db
