@@ -142,7 +142,7 @@ export function createBrokerRouter(db: Db, config: BrokerRouterConfig = {}): Rou
 
   // Upload a CSV brokerage export
   router.post('/portfolio/:companyId/csv-import', upload.single('file'), async (req, res) => {
-    const { companyId } = req.params
+    const companyId = req.params['companyId'] as string
     assertCompanyAccess(req, companyId)
     if (!req.file) return res.status(400).json({ error: 'No file uploaded. Send a multipart/form-data request with field "file".' })
     try {

@@ -43,6 +43,7 @@ import { pluginRoutes } from "./routes/plugins.js";
 import { adapterRoutes } from "./routes/adapters.js";
 import { pluginUiStaticRoutes } from "./routes/plugin-ui-static.js";
 import { createMarketRouter } from "./routes/market.js";
+import { createBrokerRouter } from "./routes/broker.js";
 import { loadConfig } from "./config.js";
 import { readBrandedStaticIndexHtml } from "./static-index-html.js";
 import { applyUiBranding } from "./ui-branding.js";
@@ -311,6 +312,11 @@ export async function createApp(
   api.use('/market', createMarketRouter({
     alphaVantageApiKey: appConfig.alphaVantageApiKey,
     polygonApiKey: appConfig.polygonApiKey,
+  }));
+  api.use('/broker', createBrokerRouter(db, {
+    schwabClientId: appConfig.schwabClientId,
+    schwabClientSecret: appConfig.schwabClientSecret,
+    schwabRedirectUri: appConfig.schwabRedirectUri,
   }));
   api.use(adapterRoutes());
   api.use(
