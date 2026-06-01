@@ -64,6 +64,8 @@ export class MarketDataError extends Error {
     message: string,
     public readonly provider: MarketDataProvider,
     public readonly ticker?: string,
+    /** True when the upstream provider rejected the request due to rate limiting (HTTP 429). */
+    public readonly rateLimited: boolean = false,
   ) {
     super(message)
     this.name = 'MarketDataError'

@@ -1,9 +1,24 @@
 import { Router } from 'express'
+import type { Response } from 'express'
 import { z } from 'zod'
 import rateLimit from 'express-rate-limit'
-import { MarketDataClient } from '@stockpilotai/market-data'
+import { MarketDataClient, MarketDataError } from '@stockpilotai/market-data'
 import { logger } from '../middleware/logger.js'
 import { assertAuthenticated } from './authz.js'
+
+/**
+ * Translate a market-data failure into an HTTP response. Upstream rate limits
+ * (HTTP 429 from the data provider) become a 429 with an actionable message so
+ * the UI can tell the user to retry or add an API key, instead of a generic 502.
+ */
+function sendMarketError(res: Response, err: unknown, fallbackMessage: string): Response {
+  if (err instanceof MarketDataError && err.rateLimited) {
+    return res.status(429).json({
+      error: 'Market data is temporarily rate-limited. Try again in a moment, or add an Alpha Vantage / Polygon API key for reliable data.',
+    })
+  }
+  return res.status(502).json({ error: fallbackMessage })
+}
 
 const TICKER_REGEX = /^[A-Z0-9.\-^=]{1,20}$/i
 const tickerSchema = z.string().regex(TICKER_REGEX, 'Invalid ticker symbol')
@@ -48,7 +63,7 @@ export function createMarketRouter(config: { alphaVantageApiKey?: string; polygo
       return res.json(quote)
     } catch (err) {
       logger.error({ err, ticker: parse.data }, 'Failed to fetch quote')
-      return res.status(502).json({ error: 'Failed to fetch market data' })
+      return sendMarketError(res, err, 'Failed to fetch market data')
     }
   })
 
@@ -64,7 +79,7 @@ export function createMarketRouter(config: { alphaVantageApiKey?: string; polygo
       return res.json(news)
     } catch (err) {
       logger.error({ err, ticker: parse.data }, 'Failed to fetch news')
-      return res.status(502).json({ error: 'Failed to fetch news' })
+      return sendMarketError(res, err, 'Failed to fetch news')
     }
   })
 
@@ -90,7 +105,7 @@ export function createMarketRouter(config: { alphaVantageApiKey?: string; polygo
       return res.json(history)
     } catch (err) {
       logger.error({ err, ticker: parse.data }, 'Failed to fetch history')
-      return res.status(502).json({ error: 'Failed to fetch price history' })
+      return sendMarketError(res, err, 'Failed to fetch price history')
     }
   })
 

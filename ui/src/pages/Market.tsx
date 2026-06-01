@@ -66,7 +66,15 @@ function QuoteCard({ ticker }: { ticker: string }) {
   })
 
   if (quoteLoading) return <p className="text-sm text-muted-foreground">Loading…</p>
-  if (quoteError) return <p className="text-sm text-destructive">Failed to load quote for {ticker}.</p>
+  if (quoteError) {
+    return (
+      <p className="text-sm text-destructive">
+        {quoteError instanceof Error && quoteError.message
+          ? quoteError.message
+          : `Failed to load quote for ${ticker}.`}
+      </p>
+    )
+  }
   if (!quote) return null
 
   const up = quote.change >= 0
