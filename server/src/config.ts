@@ -45,7 +45,12 @@ if (!isSameFile && existsSync(CWD_ENV_PATH)) {
 
 maybeRepairLegacyWorktreeConfigAndEnvFiles();
 
-export const STOCKPILOT_MODE = (process.env.STOCKPILOT_MODE ?? 'selfhost') as 'selfhost' | 'cloud'
+const VALID_STOCKPILOT_MODES = ['selfhost', 'cloud'] as const
+const rawMode = process.env.STOCKPILOT_MODE ?? 'selfhost'
+if (!VALID_STOCKPILOT_MODES.includes(rawMode as 'selfhost' | 'cloud')) {
+  throw new Error(`Invalid STOCKPILOT_MODE="${rawMode}". Must be "selfhost" or "cloud".`)
+}
+export const STOCKPILOT_MODE = rawMode as 'selfhost' | 'cloud'
 export const isCloudMode = STOCKPILOT_MODE === 'cloud'
 export const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || undefined
 export const POLYGON_API_KEY = process.env.POLYGON_API_KEY || undefined

@@ -15,7 +15,11 @@ function parseAlphaDate(str: string): Date {
   // Format: 20260531T120000
   const y = str.slice(0, 4), mo = str.slice(4, 6), d = str.slice(6, 8)
   const h = str.slice(9, 11), mi = str.slice(11, 13)
-  return new Date(`${y}-${mo}-${d}T${h}:${mi}:00Z`)
+  const result = new Date(`${y}-${mo}-${d}T${h}:${mi}:00Z`)
+  if (isNaN(result.getTime())) {
+    throw new MarketDataError(`Invalid date string from Alpha Vantage: "${str}"`, 'alpha-vantage')
+  }
+  return result
 }
 
 export class AlphaVantageProvider implements IMarketDataProvider {

@@ -81,6 +81,10 @@ export function createMarketRouter(config: { alphaVantageApiKey?: string; polygo
     if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
       return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' })
     }
+    const TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000
+    if (toDate.getTime() - fromDate.getTime() > TWO_YEARS_MS) {
+      return res.status(400).json({ error: 'Date range cannot exceed 2 years' })
+    }
     try {
       const history = await client.getHistory(parse.data.toUpperCase(), fromDate, toDate)
       return res.json(history)

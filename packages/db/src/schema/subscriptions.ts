@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { companies } from "./companies.js";
 
 export const subscriptions = pgTable(
@@ -15,7 +15,7 @@ export const subscriptions = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyIdIdx: index("subscriptions_company_id_idx").on(table.companyId),
+    companyIdUniq: uniqueIndex("subscriptions_company_id_uniq").on(table.companyId),
     stripeCustomerIdx: index("subscriptions_stripe_customer_id_idx").on(table.stripeCustomerId),
   }),
 );

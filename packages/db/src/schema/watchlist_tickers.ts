@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { companies } from "./companies.js";
 
 export const watchlistTickers = pgTable(
@@ -13,5 +13,6 @@ export const watchlistTickers = pgTable(
   (table) => ({
     companyIdIdx: index("watchlist_tickers_company_id_idx").on(table.companyId),
     tickerIdx: index("watchlist_tickers_ticker_idx").on(table.ticker),
+    companyTickerUniq: uniqueIndex("watchlist_tickers_company_ticker_uniq").on(table.companyId, table.ticker),
   }),
 );
