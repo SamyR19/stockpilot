@@ -19,6 +19,13 @@ describe('subscription service', () => {
     vi.unstubAllEnvs()
   })
 
+  it('honors isCloudMode:false even when STOCKPILOT_MODE env is cloud', () => {
+    vi.stubEnv('STOCKPILOT_MODE', 'cloud')
+    const svc = createSubscriptionService(dbReturning(null), { isCloudMode: false })
+    expect(svc.tierFromStatus('active')).toBe('selfhost')
+    vi.unstubAllEnvs()
+  })
+
   it('maps an active cloud subscription to the subscription tier', () => {
     vi.stubEnv('STOCKPILOT_MODE', 'cloud')
     const svc = createSubscriptionService(dbReturning(null), { isCloudMode: true })

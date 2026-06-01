@@ -12,11 +12,16 @@ export interface SubscriptionRow {
   currentPeriodEnd: Date | null
 }
 
+export type SubscriptionPatch = Pick<
+  SubscriptionRow,
+  'plan' | 'stripeCustomerId' | 'stripeSubscriptionId' | 'currentPeriodEnd'
+>
+
 export interface SubscriptionService {
   getForCompany(companyId: string): Promise<SubscriptionRow | null>
   tierFromStatus(status: SubscriptionStatus): UserTier
   tierForCompany(companyId: string): Promise<UserTier>
-  setStatus(companyId: string, status: SubscriptionStatus, patch?: Partial<SubscriptionRow>): Promise<void>
+  setStatus(companyId: string, status: SubscriptionStatus, patch?: Partial<SubscriptionPatch>): Promise<void>
   linkStripeCustomer(companyId: string, stripeCustomerId: string): Promise<void>
 }
 
@@ -44,6 +49,7 @@ export function createSubscriptionService(db: Db, opts: { isCloudMode: boolean }
     },
 
     tierFromStatus(status) {
+      if (!opts.isCloudMode) return 'selfhost'
       return getUserTier(status)
     },
 
@@ -53,7 +59,7 @@ export function createSubscriptionService(db: Db, opts: { isCloudMode: boolean }
       return getUserTier(normalizeStatus(row?.status))
     },
 
-    async setStatus(companyId, status, patch = {}) {
+    async setStatus(companyId: string, status: SubscriptionStatus, patch: Partial<SubscriptionPatch> = {}) {
       const value = status ?? 'free'
       await db
         .insert(subscriptions)
