@@ -54,6 +54,9 @@ export const STOCKPILOT_MODE = rawMode as 'selfhost' | 'cloud'
 export const isCloudMode = STOCKPILOT_MODE === 'cloud'
 export const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || undefined
 export const POLYGON_API_KEY = process.env.POLYGON_API_KEY || undefined
+export const SCHWAB_CLIENT_ID = process.env.SCHWAB_CLIENT_ID || undefined
+export const SCHWAB_CLIENT_SECRET = process.env.SCHWAB_CLIENT_SECRET || undefined
+export const SCHWAB_REDIRECT_URI = process.env.SCHWAB_REDIRECT_URI || 'http://localhost:3100/api/broker/schwab/callback'
 
 const TAILSCALE_DETECT_TIMEOUT_MS = 3000;
 
@@ -101,6 +104,9 @@ export interface Config {
   isCloudMode: boolean;
   alphaVantageApiKey: string | undefined;
   polygonApiKey: string | undefined;
+  schwabClientId?: string
+  schwabClientSecret?: string
+  schwabRedirectUri: string
 }
 
 function detectTailnetBindHost(): string | undefined {
@@ -351,5 +357,8 @@ export function loadConfig(): Config {
     isCloudMode,
     alphaVantageApiKey: ALPHA_VANTAGE_API_KEY,
     polygonApiKey: POLYGON_API_KEY,
+    schwabClientId: SCHWAB_CLIENT_ID,
+    schwabClientSecret: SCHWAB_CLIENT_SECRET,
+    schwabRedirectUri: SCHWAB_REDIRECT_URI,
   };
 }
