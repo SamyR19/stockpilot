@@ -20,27 +20,31 @@ export interface RunLimitService {
 }
 
 export function createRunLimitService(db: Db): RunLimitService {
-  return {
-    async monthlyRunCount(companyId) {
-      const rows = await db
-        .select({ count: count() })
-        .from(heartbeatRuns)
-        .where(and(eq(heartbeatRuns.companyId, companyId), gte(heartbeatRuns.createdAt, startOfMonthUtc())))
-      return Number(rows[0]?.count ?? 0)
-    },
-
-    async canStartRun(companyId, tier) {
-      if (tier !== 'free') return { allowed: true }
-      const used = await this.monthlyRunCount(companyId)
-      if (used >= FREE_TIER_MONTHLY_RUNS) {
-        return {
-          allowed: false,
-          reason: `Free tier monthly run limit reached (${FREE_TIER_MONTHLY_RUNS}). Upgrade or add your own API keys for unlimited runs.`,
-          used,
-          limit: FREE_TIER_MONTHLY_RUNS,
-        }
-      }
-      return { allowed: true, used, limit: FREE_TIER_MONTHLY_RUNS }
-    },
+  async function monthlyRunCount(companyId: string): Promise<number> {
+    // Count every run row created this month (status-agnostic). A run row is
+    // inserted when a run is queued, so createdAt is the correct "attempted this
+    // month" signal for the free-tier cap — we intentionally count attempts, not
+    // only runs that reached startedAt.
+    const rows = await db
+      .select({ count: count() })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.companyId, companyId), gte(heartbeatRuns.createdAt, startOfMonthUtc())))
+    return Number(rows[0]?.count ?? 0)
   }
+
+  async function canStartRun(companyId: string, tier: UserTier): Promise<RunLimitDecision> {
+    if (tier !== 'free') return { allowed: true }
+    const used = await monthlyRunCount(companyId)
+    if (used >= FREE_TIER_MONTHLY_RUNS) {
+      return {
+        allowed: false,
+        reason: `Free tier monthly run limit reached (${FREE_TIER_MONTHLY_RUNS}). Upgrade or add your own API keys for unlimited runs.`,
+        used,
+        limit: FREE_TIER_MONTHLY_RUNS,
+      }
+    }
+    return { allowed: true, used, limit: FREE_TIER_MONTHLY_RUNS }
+  }
+
+  return { monthlyRunCount, canStartRun }
 }

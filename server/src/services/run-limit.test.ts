@@ -28,4 +28,9 @@ describe('run-limit service', () => {
     expect(result.allowed).toBe(false)
     expect(result.reason).toContain('monthly run limit')
   })
+
+  it('works when canStartRun is destructured (no this-binding)', async () => {
+    const { canStartRun } = createRunLimitService(dbWithCount(0))
+    expect(await canStartRun(COMPANY, 'free')).toEqual({ allowed: true, used: 0, limit: 20 })
+  })
 })
