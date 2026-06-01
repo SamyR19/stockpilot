@@ -207,4 +207,20 @@ export const queryKeys = {
   adapters: {
     all: ["adapters"] as const,
   },
+  market: {
+    quote: (ticker: string) => ["market", "quote", ticker] as const,
+    news: (ticker: string, limit: number) => ["market", "news", ticker, limit] as const,
+    history: (ticker: string, from: string, to: string) => ["market", "history", ticker, from, to] as const,
+    earningsCalendar: (tickers: string[]) => ["market", "earnings-calendar", tickers.join(",")] as const,
+  },
+  broker: {
+    connections: (companyId: string) => ["broker", "connections", companyId] as const,
+    portfolio: (companyId: string) => ["broker", "portfolio", companyId] as const,
+  },
+  watchlist: {
+    list: (companyId: string) => ["watchlist", companyId] as const,
+  },
+  alerts: {
+    list: (companyId: string) => ["alerts", companyId] as const,
+  },
 };
