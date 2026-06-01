@@ -50,7 +50,7 @@ export function createWatchlistRouter(db: Db): Router {
     const notesSchema = z.string().max(2000).nullable().optional()
     const notesParse = notesSchema.safeParse(typeof notesRaw === 'string' ? notesRaw : null)
     if (!notesParse.success) {
-      return res.status(400).json({ error: 'Notes must be 500 characters or less' })
+      return res.status(400).json({ error: 'Notes must be 2000 characters or less' })
     }
     const notes = notesParse.data ?? null
     try {
