@@ -22,7 +22,7 @@ Open-source OS for running AI agents as your personal Wall Street research team.
 | **Plan 2** | Market data adapters (Yahoo / Alpha Vantage / Polygon) + `/api/market/*` routes | ✅ Done |
 | **Plan 3** | Broker connections (Schwab OAuth, CSV import) + `/api/broker/*` | ✅ Done |
 | **Plan 4** | Finance UI pages: Portfolio, Watchlist, Alerts, Market + sidebar nav | ✅ Done |
-| **Plan 5** | **Stripe billing + subscription tier enforcement** | ⏳ **NEXT — being planned** |
+| **Plan 5** | **Stripe billing + subscription tier enforcement** | ⏳ **NEXT — plan written** (`docs/superpowers/plans/2026-06-01-plan-5-billing-tiers.md`), not yet executed |
 | **Plan 6** | Cloud deployment (Vercel + Supabase) | ⚪ Not started |
 
 Plans live in `docs/superpowers/plans/YYYY-MM-DD-plan-N-*.md`. Each plan is executed with the `superpowers:subagent-driven-development` skill (owner's standing preference — never ask which execution approach).
