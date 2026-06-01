@@ -70,8 +70,11 @@ export function createBrokerConnectionService(db: Db) {
       .where(and(eq(brokerConnections.id, connectionId), eq(brokerConnections.companyId, companyId), eq(brokerConnections.active, true)))
     if (rows.length === 0) return null
     const row = rows[0]
+    if (!row.accessTokenEncrypted) {
+      throw new Error(`Connection ${connectionId} has no encrypted access token`)
+    }
     return {
-      accessToken: row.accessTokenEncrypted ? decryptToken(row.accessTokenEncrypted) : '',
+      accessToken: decryptToken(row.accessTokenEncrypted),
       refreshToken: row.refreshTokenEncrypted ? decryptToken(row.refreshTokenEncrypted) : null,
     }
   }

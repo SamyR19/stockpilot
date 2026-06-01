@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { createBrokerConnectionService } from './broker-connections.js'
 
 // Minimal mock DB
