@@ -139,18 +139,26 @@ export function healthRoutes(
     const persistedDevServerStatus = readPersistedDevServerStatus();
     let devServer: ReturnType<typeof toDevServerHealthStatus> | undefined;
     if (exposeDevServerDetails && persistedDevServerStatus && typeof (db as { select?: unknown }).select === "function") {
-      const instanceSettings = instanceSettingsService(db);
-      const experimentalSettings = await instanceSettings.getExperimental();
-      const activeRunCount = await db
-        .select({ count: count() })
-        .from(heartbeatRuns)
-        .where(inArray(heartbeatRuns.status, ["queued", "running"]))
-        .then((rows) => Number(rows[0]?.count ?? 0));
+      // Dev-server details are supplementary. The core health signal (DB
+      // reachability) is already validated above, so a failure gathering these
+      // optional details must never turn the health check into a 500 that
+      // blocks the entire UI from loading.
+      try {
+        const instanceSettings = instanceSettingsService(db);
+        const experimentalSettings = await instanceSettings.getExperimental();
+        const activeRunCount = await db
+          .select({ count: count() })
+          .from(heartbeatRuns)
+          .where(inArray(heartbeatRuns.status, ["queued", "running"]))
+          .then((rows) => Number(rows[0]?.count ?? 0));
 
-      devServer = toDevServerHealthStatus(persistedDevServerStatus, {
-        autoRestartEnabled: experimentalSettings.autoRestartDevServerWhenIdle ?? false,
-        activeRunCount,
-      });
+        devServer = toDevServerHealthStatus(persistedDevServerStatus, {
+          autoRestartEnabled: experimentalSettings.autoRestartDevServerWhenIdle ?? false,
+          activeRunCount,
+        });
+      } catch (error) {
+        logger.warn({ err: error }, "Health check failed to gather dev-server details; omitting from response");
+      }
     }
 
     if (!exposeFullDetails) {
