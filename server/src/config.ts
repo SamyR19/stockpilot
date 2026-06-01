@@ -47,6 +47,8 @@ maybeRepairLegacyWorktreeConfigAndEnvFiles();
 
 export const STOCKPILOT_MODE = (process.env.STOCKPILOT_MODE ?? 'selfhost') as 'selfhost' | 'cloud'
 export const isCloudMode = STOCKPILOT_MODE === 'cloud'
+export const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || undefined
+export const POLYGON_API_KEY = process.env.POLYGON_API_KEY || undefined
 
 const TAILSCALE_DETECT_TIMEOUT_MS = 3000;
 
@@ -92,6 +94,8 @@ export interface Config {
   telemetryEnabled: boolean;
   stockpilotMode: 'selfhost' | 'cloud';
   isCloudMode: boolean;
+  alphaVantageApiKey: string | undefined;
+  polygonApiKey: string | undefined;
 }
 
 function detectTailnetBindHost(): string | undefined {
@@ -340,5 +344,7 @@ export function loadConfig(): Config {
     telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
     stockpilotMode: STOCKPILOT_MODE,
     isCloudMode,
+    alphaVantageApiKey: ALPHA_VANTAGE_API_KEY,
+    polygonApiKey: POLYGON_API_KEY,
   };
 }
