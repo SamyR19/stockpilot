@@ -42,6 +42,7 @@ import { accessRoutes } from "./routes/access.js";
 import { pluginRoutes } from "./routes/plugins.js";
 import { adapterRoutes } from "./routes/adapters.js";
 import { pluginUiStaticRoutes } from "./routes/plugin-ui-static.js";
+import { createMarketRouter } from "./routes/market.js";
 import { readBrandedStaticIndexHtml } from "./static-index-html.js";
 import { applyUiBranding } from "./ui-branding.js";
 import { logger } from "./middleware/logger.js";
@@ -305,6 +306,7 @@ export async function createApp(
       { workerManager },
     ),
   );
+  api.use('/market', createMarketRouter());
   api.use(adapterRoutes());
   api.use(
     accessRoutes(db, {
