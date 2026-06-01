@@ -27,14 +27,14 @@ export const CONDITION_LABELS: Record<AlertConditionType, string> = {
 
 export const alertsApi = {
   list: (companyId: string) =>
-    api.get<AlertRule[]>(`/alerts/${companyId}`),
+    api.get<AlertRule[]>(`/alerts/${encodeURIComponent(companyId)}`),
 
-  create: (companyId: string, data: { ticker: string; conditionType: AlertConditionType; threshold?: string }) =>
-    api.post<AlertRule>(`/alerts/${companyId}`, data),
+  create: (companyId: string, data: { ticker: string; conditionType: AlertConditionType; threshold?: string | null }) =>
+    api.post<AlertRule>(`/alerts/${encodeURIComponent(companyId)}`, data),
 
   delete: (companyId: string, alertId: string) =>
-    api.delete<void>(`/alerts/${companyId}/${alertId}`),
+    api.delete<void>(`/alerts/${encodeURIComponent(companyId)}/${encodeURIComponent(alertId)}`),
 
   setActive: (companyId: string, alertId: string, active: boolean) =>
-    api.patch<{ id: string; active: boolean }>(`/alerts/${companyId}/${alertId}`, { active }),
+    api.patch<{ id: string; active: boolean }>(`/alerts/${encodeURIComponent(companyId)}/${encodeURIComponent(alertId)}`, { active }),
 };

@@ -54,8 +54,10 @@ export const marketApi = {
     api.get<NewsItem[]>(`/market/news/${encodeURIComponent(ticker)}?limit=${limit}`),
 
   getHistory: (ticker: string, from: string, to: string) =>
-    api.get<HistoricalPrice[]>(`/market/history/${encodeURIComponent(ticker)}?from=${from}&to=${to}`),
+    api.get<HistoricalPrice[]>(`/market/history/${encodeURIComponent(ticker)}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
 
-  getEarningsCalendar: (tickers: string[]) =>
-    api.get<EarningsEvent[]>(`/market/earnings-calendar?tickers=${tickers.map(encodeURIComponent).join(',')}`),
+  getEarningsCalendar: (tickers: string[]) => {
+    if (tickers.length === 0) return Promise.resolve([])
+    return api.get<EarningsEvent[]>(`/market/earnings-calendar?tickers=${tickers.map(encodeURIComponent).join(',')}`)
+  },
 };

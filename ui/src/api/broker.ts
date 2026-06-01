@@ -26,27 +26,20 @@ export interface SchwabAuthUrlResponse {
 
 export const brokerApi = {
   listConnections: (companyId: string) =>
-    api.get<BrokerConnection[]>(`/broker/connections/${companyId}`),
+    api.get<BrokerConnection[]>(`/broker/connections/${encodeURIComponent(companyId)}`),
 
   deactivateConnection: (companyId: string, connectionId: string) =>
-    api.delete<{ ok: true }>(`/broker/connections/${companyId}/${connectionId}`),
+    api.delete<{ ok: true }>(`/broker/connections/${encodeURIComponent(companyId)}/${encodeURIComponent(connectionId)}`),
 
   getSchwabAuthUrl: (companyId: string) =>
     api.get<SchwabAuthUrlResponse>(`/broker/schwab/auth-url?companyId=${encodeURIComponent(companyId)}`),
 
   getPortfolio: (companyId: string) =>
-    api.get<PortfolioHolding[]>(`/broker/portfolio/${companyId}`),
+    api.get<PortfolioHolding[]>(`/broker/portfolio/${encodeURIComponent(companyId)}`),
 
   importCsv: (companyId: string, file: File) => {
     const form = new FormData()
     form.append('file', file)
-    return fetch(`/api/broker/portfolio/${companyId}/csv-import`, {
-      method: 'POST',
-      body: form,
-      credentials: 'include',
-    }).then(async (r) => {
-      if (!r.ok) throw new Error(await r.text())
-      return r.json() as Promise<PortfolioHolding[]>
-    })
+    return api.postForm<PortfolioHolding[]>(`/broker/portfolio/${encodeURIComponent(companyId)}/csv-import`, form)
   },
 };
