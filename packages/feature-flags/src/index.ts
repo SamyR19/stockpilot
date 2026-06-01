@@ -49,9 +49,11 @@ export function canUseRole(role: AgentRole, tier: UserTier): boolean {
 
 export type DataProvider = 'yahoo-finance' | 'alpha-vantage' | 'polygon'
 
+const ALL_DATA_PROVIDERS: readonly DataProvider[] = ['yahoo-finance', 'alpha-vantage', 'polygon']
 const FREE_TIER_DATA_PROVIDERS: readonly DataProvider[] = ['yahoo-finance']
 
 export function canUseDataProvider(provider: DataProvider, tier: UserTier): boolean {
+  if (!(ALL_DATA_PROVIDERS as readonly string[]).includes(provider)) return false
   if (tier === 'free') return FREE_TIER_DATA_PROVIDERS.includes(provider)
   return true
 }

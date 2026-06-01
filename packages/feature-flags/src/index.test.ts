@@ -120,6 +120,11 @@ describe('canUseDataProvider', () => {
       expect(canUseDataProvider('yahoo-finance', tier)).toBe(true)
     }
   })
+  it('denies unknown providers on every tier (deny-by-default)', () => {
+    for (const tier of ['selfhost', 'free', 'keys', 'subscription'] as const) {
+      expect(canUseDataProvider('unknown-provider' as never, tier)).toBe(false)
+    }
+  })
   it('restricts alpha-vantage and polygon to non-free tiers', () => {
     expect(canUseDataProvider('alpha-vantage', 'free')).toBe(false)
     expect(canUseDataProvider('polygon', 'free')).toBe(false)
