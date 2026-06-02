@@ -1,10 +1,36 @@
 import { Router } from 'express'
-import type { Response } from 'express'
+import type { Request, Response } from 'express'
 import { z } from 'zod'
 import rateLimit from 'express-rate-limit'
 import { MarketDataClient, MarketDataError } from '@stockpilotai/market-data'
+import { canUseDataProvider, type UserTier } from '@stockpilotai/feature-flags'
 import { logger } from '../middleware/logger.js'
 import { assertAuthenticated } from './authz.js'
+
+/**
+ * Pure, tier-aware filter of which data-provider API keys may be used.
+ * The free tier is restricted to Yahoo Finance, so its configured keys are
+ * dropped here regardless of what's supplied. Higher tiers keep whatever keys
+ * are actually configured. Keys that are absent are simply omitted.
+ */
+export function selectProvidersForTier(
+  tier: UserTier,
+  keys: { alphaVantageApiKey?: string; polygonApiKey?: string },
+): { alphaVantageApiKey?: string; polygonApiKey?: string } {
+  const out: { alphaVantageApiKey?: string; polygonApiKey?: string } = {}
+  if (keys.alphaVantageApiKey && canUseDataProvider('alpha-vantage', tier)) {
+    out.alphaVantageApiKey = keys.alphaVantageApiKey
+  }
+  if (keys.polygonApiKey && canUseDataProvider('polygon', tier)) {
+    out.polygonApiKey = keys.polygonApiKey
+  }
+  return out
+}
+
+export interface MarketRouterDeps {
+  resolveTier: (req: Request) => Promise<UserTier>
+  resolveKeys: (req: Request) => Promise<{ alphaVantageApiKey?: string; polygonApiKey?: string }>
+}
 
 /**
  * Translate a market-data failure into an HTTP response. Upstream rate limits
@@ -31,13 +57,25 @@ const marketRateLimit = rateLimit({
   message: { error: 'Too many requests, please try again later' },
 })
 
-export function createMarketRouter(config: { alphaVantageApiKey?: string; polygonApiKey?: string }): Router {
+export function createMarketRouter(deps: MarketRouterDeps): Router {
   const router = Router()
 
-  const client = new MarketDataClient({
-    alphaVantageApiKey: config.alphaVantageApiKey,
-    polygonApiKey: config.polygonApiKey,
-  })
+  // Cache MarketDataClient instances by the resolved-provider signature so we
+  // don't rebuild on every request. The client is lightweight, but tier-aware
+  // resolution means there are only a few distinct provider combinations.
+  const clientCache = new Map<string, MarketDataClient>()
+
+  async function getClient(req: Request): Promise<MarketDataClient> {
+    const [tier, keys] = await Promise.all([deps.resolveTier(req), deps.resolveKeys(req)])
+    const providers = selectProvidersForTier(tier, keys)
+    const cacheKey = `${providers.alphaVantageApiKey ?? ''}|${providers.polygonApiKey ?? ''}`
+    let client = clientCache.get(cacheKey)
+    if (!client) {
+      client = new MarketDataClient(providers)
+      clientCache.set(cacheKey, client)
+    }
+    return client
+  }
 
   // Auth guard — reject unauthenticated requests
   router.use((req, res, next) => {
@@ -59,6 +97,7 @@ export function createMarketRouter(config: { alphaVantageApiKey?: string; polygo
       return res.status(400).json({ error: 'Invalid ticker symbol' })
     }
     try {
+      const client = await getClient(req)
       const quote = await client.getQuote(parse.data.toUpperCase())
       return res.json(quote)
     } catch (err) {
@@ -75,6 +114,7 @@ export function createMarketRouter(config: { alphaVantageApiKey?: string; polygo
     }
     const limit = Math.min(parseInt(String(req.query.limit ?? '10'), 10) || 10, 50)
     try {
+      const client = await getClient(req)
       const news = await client.getNews(parse.data.toUpperCase(), limit)
       return res.json(news)
     } catch (err) {
@@ -101,6 +141,7 @@ export function createMarketRouter(config: { alphaVantageApiKey?: string; polygo
       return res.status(400).json({ error: 'Date range cannot exceed 2 years' })
     }
     try {
+      const client = await getClient(req)
       const history = await client.getHistory(parse.data.toUpperCase(), fromDate, toDate)
       return res.json(history)
     } catch (err) {
@@ -124,6 +165,7 @@ export function createMarketRouter(config: { alphaVantageApiKey?: string; polygo
       return res.status(400).json({ error: 'No valid tickers provided' })
     }
     try {
+      const client = await getClient(req)
       const calendar = await client.getEarningsCalendar(tickers)
       return res.json(calendar)
     } catch (err) {

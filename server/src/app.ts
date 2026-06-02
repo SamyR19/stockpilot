@@ -315,9 +315,30 @@ export async function createApp(
     ),
   );
   const appConfig = loadConfig();
+  const marketSubscriptionService = createSubscriptionService(db, { isCloudMode: appConfig.isCloudMode });
   api.use('/market', createMarketRouter({
-    alphaVantageApiKey: appConfig.alphaVantageApiKey,
-    polygonApiKey: appConfig.polygonApiKey,
+    // Resolve the caller's tier per request. Market routes carry no companyId in
+    // the path; the caller's company comes from the authenticated actor.
+    resolveTier: async (req) => {
+      if (!appConfig.isCloudMode) return 'selfhost';
+      // Agent actors carry a single companyId; board users may belong to several.
+      const companyId =
+        req.actor.companyId ??
+        (Array.isArray(req.actor.companyIds) ? req.actor.companyIds[0] : undefined);
+      // No resolvable company in cloud mode -> safe default of 'free' (Yahoo only).
+      if (!companyId) return 'free';
+      return marketSubscriptionService.tierForCompany(companyId);
+    },
+    // Self-host uses the global config keys. In cloud mode we currently also fall
+    // back to global config keys; per-company stored data keys (secrets named
+    // `data.alpha_vantage` / `data.polygon`) require a plaintext secret read-path
+    // that the secrets service does not yet expose.
+    // TODO(plan5): resolve per-company data keys once the secrets read-path lands.
+    // Tier gating still applies: free tier gets {} regardless of these keys.
+    resolveKeys: async () => ({
+      alphaVantageApiKey: appConfig.alphaVantageApiKey,
+      polygonApiKey: appConfig.polygonApiKey,
+    }),
   }));
   api.use('/broker', createBrokerRouter(db, {
     schwabClientId: appConfig.schwabClientId,
