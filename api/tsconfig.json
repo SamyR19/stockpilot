@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../.vercel/output/functions/api",
+    "rootDir": "..",
+    "noEmit": false,
+    "typeRoots": ["../server/node_modules/@types", "../node_modules/@types"],
+    "types": ["node", "express", "express-serve-static-core"]
+  },
+  "include": [".", "../server/src/types"]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@paperclipai/api-vercel",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@paperclipai/db": "workspace:*",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  }
+}
