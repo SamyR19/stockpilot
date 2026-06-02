@@ -46,6 +46,10 @@ import { createMarketRouter } from "./routes/market.js";
 import { createBrokerRouter } from "./routes/broker.js";
 import { createWatchlistRouter } from "./routes/watchlist.js";
 import { createAlertsRouter } from "./routes/alerts.js";
+import { createApiKeysRouter } from "./routes/api-keys.js";
+import { secretService } from "./services/index.js";
+import { createSubscriptionService } from "./services/subscription.js";
+import { getConfiguredSecretProvider } from "./secrets/configured-provider.js";
 import { loadConfig } from "./config.js";
 import { readBrandedStaticIndexHtml } from "./static-index-html.js";
 import { applyUiBranding } from "./ui-branding.js";
@@ -322,6 +326,33 @@ export async function createApp(
   }));
   api.use('/watchlist', createWatchlistRouter(db))
   api.use('/alerts', createAlertsRouter(db))
+  const secrets = secretService(db);
+  const apiKeySecretsProvider = getConfiguredSecretProvider();
+  const apiKeySecretsAdapter = {
+    setSecret: async (companyId: string, name: string, value: string) => {
+      const existing = await secrets.getByName(companyId, name);
+      if (existing) {
+        return secrets.rotate(existing.id, { value });
+      }
+      return secrets.create(companyId, { name, key: name, provider: apiKeySecretsProvider, value });
+    },
+    deleteSecretByName: async (companyId: string, name: string) => {
+      const existing = await secrets.getByName(companyId, name);
+      if (!existing) return false;
+      await secrets.remove(existing.id);
+      return true;
+    },
+    listKeyNames: async (companyId: string) => {
+      const list = await secrets.list(companyId);
+      return list.map((s) => s.name);
+    },
+  };
+  const subscriptionService = createSubscriptionService(db, { isCloudMode: appConfig.isCloudMode });
+  api.use('/api-keys', createApiKeysRouter({
+    secrets: apiKeySecretsAdapter,
+    subscription: subscriptionService,
+    isCloudMode: appConfig.isCloudMode,
+  }))
   api.use(adapterRoutes());
   api.use(
     accessRoutes(db, {
