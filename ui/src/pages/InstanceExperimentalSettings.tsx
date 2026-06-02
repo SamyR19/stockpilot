@@ -365,7 +365,7 @@ export function InstanceExperimentalSettings() {
             <div className="space-y-1.5">
               <h2 className="text-sm font-semibold">Auto-Create Issue Recovery Tasks</h2>
               <p className="max-w-2xl text-sm text-muted-foreground">
-                Let the heartbeat scheduler create recovery issues for issue dependency chains found inside the
+                Let the routine scheduler create recovery issues for issue dependency chains found inside the
                 configured lookback window.
               </p>
             </div>

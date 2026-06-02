@@ -633,7 +633,7 @@ export function DesignGuide() {
             <Button variant="outline" size="sm">Open Popover</Button>
           </PopoverTrigger>
           <PopoverContent className="space-y-2">
-            <p className="text-sm font-medium">Agent heartbeat</p>
+            <p className="text-sm font-medium">Agent routine</p>
             <p className="text-xs text-muted-foreground">
               Last run succeeded 24s ago. Next timer run in 9m.
             </p>
@@ -700,7 +700,7 @@ export function DesignGuide() {
           <div className="space-y-2 p-3">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="rounded-md border border-border p-2 text-sm">
-                Heartbeat run #{i + 1}: completed successfully
+                Routine run #{i + 1}: completed successfully
               </div>
             ))}
           </div>
@@ -1229,7 +1229,7 @@ export function DesignGuide() {
             <EntityRow
               leading={<PriorityIcon priority="high" />}
               identifier="PAP-101"
-              title="Build agent heartbeat system"
+              title="Build agent routine system"
               onClick={() => {}}
             />
             <EntityRow

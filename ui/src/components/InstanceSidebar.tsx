@@ -41,7 +41,7 @@ export function InstanceSidebar() {
           <SidebarNavItem to="/instance/settings/profile" label="Profile" icon={UserRoundPen} end />
           <SidebarNavItem to="/instance/settings/general" label="General" icon={SlidersHorizontal} end />
           <SidebarNavItem to="/instance/settings/access" label="Access" icon={Shield} end />
-          <SidebarNavItem to="/instance/settings/heartbeats" label="Heartbeats" icon={Clock3} end />
+          <SidebarNavItem to="/instance/settings/heartbeats" label="Routines" icon={Clock3} end />
           <SidebarNavItem to="/instance/settings/experimental" label="Experimental" icon={FlaskConical} />
           <SidebarNavItem to="/instance/settings/plugins" label="Plugins" icon={Puzzle} />
           {sidebarPlugins.length > 0 ? (
