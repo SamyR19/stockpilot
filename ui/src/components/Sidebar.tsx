@@ -16,6 +16,7 @@ import {
   Eye,
   Bell,
   BarChart2,
+  CreditCard,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/lib/router";
@@ -128,6 +129,7 @@ export function Sidebar() {
           <SidebarNavItem to="/watchlist" label="Watchlist" icon={Eye} />
           <SidebarNavItem to="/alerts" label="Alerts" icon={Bell} />
           <SidebarNavItem to="/market" label="Market" icon={BarChart2} />
+          <SidebarNavItem to="/billing" label="Billing" icon={CreditCard} />
         </SidebarSection>
 
         <SidebarSection label="Company">
