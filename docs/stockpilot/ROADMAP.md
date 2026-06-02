@@ -4,7 +4,7 @@
 >
 > Companion docs: [`PROJECT_GOALS.md`](./PROJECT_GOALS.md) (the why) · [`PAPERCLIP_REFERENCE.md`](./PAPERCLIP_REFERENCE.md) (what the forked code does) · design spec: `docs/superpowers/specs/2026-05-31-stockpilot-ai-design.md` · plans: `docs/superpowers/plans/`.
 
-**Last updated:** 2026-06-01 (after Plan 5 — Stripe billing + tier enforcement)
+**Last updated:** 2026-06-02 (after Plan 6 Task 8 — cloud deployment env vars documented)
 
 ---
 
@@ -23,7 +23,7 @@ Open-source OS for running AI agents as your personal Wall Street research team.
 | **Plan 3** | Broker connections (Schwab OAuth, CSV import) + `/api/broker/*` | ✅ Done |
 | **Plan 4** | Finance UI pages: Portfolio, Watchlist, Alerts, Market + sidebar nav | ✅ Done |
 | **Plan 5** | **Stripe billing + subscription tier enforcement** | ✅ Done (`docs/superpowers/plans/2026-06-01-plan-5-billing-tiers.md`) |
-| **Plan 6** | Cloud deployment (Vercel + Supabase) | ⏳ **NEXT — plan written** (`docs/superpowers/plans/2026-06-01-plan-6-cloud-deployment.md`) |
+| **Plan 6** | Cloud deployment (Vercel + Supabase) | ⏳ **In progress — code complete; awaiting Supabase + Vercel credentials to deploy** (`docs/superpowers/plans/2026-06-01-plan-6-cloud-deployment.md`) |
 
 Plans live in `docs/superpowers/plans/YYYY-MM-DD-plan-N-*.md`. Each plan is executed with the `superpowers:subagent-driven-development` skill (owner's standing preference — never ask which execution approach).
 
@@ -56,9 +56,11 @@ Plans live in `docs/superpowers/plans/YYYY-MM-DD-plan-N-*.md`. Each plan is exec
 | API keys | two-key mgmt (AI `ai.<provider>` + data `data.<provider>`) via secrets pipeline; data key → `keys` tier | `server/src/routes/api-keys.ts` |
 | Stripe billing | config + lazy client + `/api/billing/*` (status, checkout, portal, signature-verified webhook); cloud-only | `server/src/routes/billing.ts`, `services/stripe-client.ts` |
 | Billing UI | Billing page (tier, usage, upgrade/manage) + sidebar nav; self-host shows "all unlocked" | `ui/src/pages/Billing.tsx` |
+| Vercel deployment config | `vercel.json`, `api/index.ts` serverless entry, WS disable flag | `vercel.json`, `api/index.ts` |
 
 ### ⏳ Not built yet (still owed from the spec)
-- Cloud deploy: Vercel + Supabase + Vercel Blob + Vercel Cron (Plan 6).
+- **Plan 6 pending**: Supabase project setup + Vercel env vars configured + first deploy verified (Tasks 4, 5, 7 require Supabase/Vercel credentials — see `docs/superpowers/plans/2026-06-01-plan-6-cloud-deployment.md`).
+- Vercel Cron for automated heartbeat scheduling (deferred to its own plan).
 - Bring-your-own-keys onboarding **wizard** (the key-management API exists; a guided multi-step UI does not).
 - Per-company **data-key value** resolution into the market client (the keys are stored; market provider selection currently reads global config keys — see `TODO(plan5)` in `server/src/app.ts`).
 - Reports page, Routine Builder, alert evaluation engine, dashboard rework, remaining language changes.
