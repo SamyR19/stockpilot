@@ -23,6 +23,7 @@ const BOARD_ROUTE_ROOTS = new Set([
   "watchlist",
   "alerts",
   "market",
+  "billing",
 ]);
 
 const GLOBAL_ROUTE_ROOTS = new Set(["auth", "invite", "board-claim", "cli-auth", "docs", "instance"]);

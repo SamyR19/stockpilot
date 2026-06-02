@@ -223,4 +223,10 @@ export const queryKeys = {
   alerts: {
     list: (companyId: string) => ["alerts", companyId] as const,
   },
+  billing: {
+    status: (companyId: string) => ["billing", "status", companyId] as const,
+  },
+  apiKeys: {
+    list: (companyId: string) => ["api-keys", companyId] as const,
+  },
 };
