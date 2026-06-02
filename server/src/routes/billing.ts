@@ -1,4 +1,4 @@
-import { Router, raw } from 'express'
+import { Router } from 'express'
 import type { SubscriptionStatus } from '@stockpilotai/feature-flags'
 import { assertAuthenticated, assertCompanyAccess } from './authz.js'
 import { getStripe } from '../services/stripe-client.js'
@@ -39,12 +39,14 @@ export function createBillingRouter(deps: BillingDeps): Router {
 
   // Stripe webhook FIRST — needs the raw request body (not JSON-parsed) so the
   // signature can be verified, and no auth (Stripe calls it unauthenticated).
-  router.post('/webhook', raw({ type: 'application/json' }), async (req, res) => {
+  // Raw body is preserved by an express.raw() registration for this path in app.ts, BEFORE the global express.json(); required for Stripe signature verification.
+  router.post('/webhook', async (req, res) => {
     if (!deps.config.stripeWebhookSecret) {
       return res.status(503).json({ error: 'Stripe webhook not configured' })
     }
-    const stripe = getStripe(deps.config.stripeSecretKey)
     const sig = req.headers['stripe-signature']
+    if (!sig) return res.status(400).json({ error: 'Missing stripe-signature header' })
+    const stripe = getStripe(deps.config.stripeSecretKey)
     let event
     try {
       event = stripe.webhooks.constructEvent(
@@ -69,14 +71,28 @@ export function createBillingRouter(deps: BillingDeps): Router {
         metadata?: { companyId?: string }
       }
       const companyId = sub.metadata?.companyId
+      const stripeCustomerId = typeof sub.customer === 'string' ? sub.customer : undefined
+      const currentPeriodEnd = sub.current_period_end
+        ? new Date(sub.current_period_end * 1000)
+        : null
+      const mapped = mapStripeStatusToSubscription(sub.status)
       if (companyId) {
-        await deps.subscription.setStatus(companyId, mapStripeStatusToSubscription(sub.status), {
-          stripeSubscriptionId: sub.id,
-          stripeCustomerId: typeof sub.customer === 'string' ? sub.customer : undefined,
-          currentPeriodEnd: sub.current_period_end
-            ? new Date(sub.current_period_end * 1000)
-            : null,
-        })
+        if (mapped === null) {
+          logger.warn(
+            { subscriptionId: sub.id, stripeStatus: sub.status, companyId },
+            'Unmapped Stripe subscription status; skipping status write',
+          )
+        } else {
+          await deps.subscription.setStatus(companyId, mapped, {
+            stripeSubscriptionId: sub.id,
+            stripeCustomerId,
+            currentPeriodEnd,
+          })
+          logger.info(
+            { companyId, subscriptionId: sub.id, status: mapped, eventType: event.type },
+            'Updated subscription from Stripe webhook',
+          )
+        }
       } else {
         logger.warn(
           { subscriptionId: sub.id },
@@ -121,6 +137,13 @@ export function createBillingRouter(deps: BillingDeps): Router {
     if (!deps.config.stripePriceId) {
       return res.status(503).json({ error: 'Stripe price not configured' })
     }
+    const existing = await deps.subscription.getForCompany(companyId)
+    if (existing?.status === 'active') {
+      return res.status(409).json({
+        error:
+          'This workspace already has an active subscription. Use the billing portal to manage it.',
+      })
+    }
     const stripe = getStripe(deps.config.stripeSecretKey)
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -144,10 +167,18 @@ export function createBillingRouter(deps: BillingDeps): Router {
       return res.status(404).json({ error: 'No Stripe customer for this workspace' })
     }
     const stripe = getStripe(deps.config.stripeSecretKey)
-    const session = await stripe.billingPortal.sessions.create({
-      customer: row.stripeCustomerId,
-      return_url: `${deps.config.appBaseUrl}/billing`,
-    })
+    let session
+    try {
+      session = await stripe.billingPortal.sessions.create({
+        customer: row.stripeCustomerId,
+        return_url: `${deps.config.appBaseUrl}/billing`,
+      })
+    } catch (err) {
+      if (err && typeof err === 'object' && (err as any).type === 'StripeInvalidRequestError') {
+        return res.status(404).json({ error: 'Stripe customer not found. Please contact support.' })
+      }
+      throw err
+    }
     return res.json({ url: session.url })
   })
 
