@@ -4,7 +4,7 @@
 >
 > Companion docs: [`PROJECT_GOALS.md`](./PROJECT_GOALS.md) (the why) · [`PAPERCLIP_REFERENCE.md`](./PAPERCLIP_REFERENCE.md) (what the forked code does) · design spec: `docs/superpowers/specs/2026-05-31-stockpilot-ai-design.md` · plans: `docs/superpowers/plans/`.
 
-**Last updated:** 2026-06-01 (after Plan 4 + Market/health/theme/routing fixes)
+**Last updated:** 2026-06-01 (after Plan 5 — Stripe billing + tier enforcement)
 
 ---
 
@@ -22,7 +22,7 @@ Open-source OS for running AI agents as your personal Wall Street research team.
 | **Plan 2** | Market data adapters (Yahoo / Alpha Vantage / Polygon) + `/api/market/*` routes | ✅ Done |
 | **Plan 3** | Broker connections (Schwab OAuth, CSV import) + `/api/broker/*` | ✅ Done |
 | **Plan 4** | Finance UI pages: Portfolio, Watchlist, Alerts, Market + sidebar nav | ✅ Done |
-| **Plan 5** | **Stripe billing + subscription tier enforcement** | ⏳ **NEXT — plan written** (`docs/superpowers/plans/2026-06-01-plan-5-billing-tiers.md`), not yet executed |
+| **Plan 5** | **Stripe billing + subscription tier enforcement** | ✅ Done (`docs/superpowers/plans/2026-06-01-plan-5-billing-tiers.md`) |
 | **Plan 6** | Cloud deployment (Vercel + Supabase) | ⚪ Not started |
 
 Plans live in `docs/superpowers/plans/YYYY-MM-DD-plan-N-*.md`. Each plan is executed with the `superpowers:subagent-driven-development` skill (owner's standing preference — never ask which execution approach).
@@ -52,12 +52,22 @@ Plans live in `docs/superpowers/plans/YYYY-MM-DD-plan-N-*.md`. Each plan is exec
 | Finance UI pages | Portfolio, Watchlist, Alerts, Market + sidebar "Finance" section | `ui/src/pages/{Portfolio,Watchlist,Alerts,Market}.tsx` |
 | Agent role skills | 7 finance personas as skill files | created in Plan 1 (verify location in `skills/`) |
 | Branding | StockPilot name, `@stockpilotai` npm scope, `stockpilot` CLI | throughout |
+| Tier enforcement | run-limit (free 20/mo, system wakeups bypass), agent-role gate, tier-aware market providers | `server/src/services/{subscription,run-limit}.ts`, `routes/{agents,market}.ts` |
+| API keys | two-key mgmt (AI `ai.<provider>` + data `data.<provider>`) via secrets pipeline; data key → `keys` tier | `server/src/routes/api-keys.ts` |
+| Stripe billing | config + lazy client + `/api/billing/*` (status, checkout, portal, signature-verified webhook); cloud-only | `server/src/routes/billing.ts`, `services/stripe-client.ts` |
+| Billing UI | Billing page (tier, usage, upgrade/manage) + sidebar nav; self-host shows "all unlocked" | `ui/src/pages/Billing.tsx` |
 
 ### ⏳ Not built yet (still owed from the spec)
-- Stripe billing + tier enforcement (Plan 5).
 - Cloud deploy: Vercel + Supabase + Vercel Blob + Vercel Cron (Plan 6).
-- API-key management UX (two key types: **AI/brain keys** + **data keys**) and the bring-your-own-keys onboarding wizard.
+- Bring-your-own-keys onboarding **wizard** (the key-management API exists; a guided multi-step UI does not).
+- Per-company **data-key value** resolution into the market client (the keys are stored; market provider selection currently reads global config keys — see `TODO(plan5)` in `server/src/app.ts`).
 - Reports page, Routine Builder, alert evaluation engine, dashboard rework, remaining language changes.
+
+### Plan 5 deferred follow-ups (tracked, non-blocking for self-host)
+- Stripe **webhook event de-duplication / out-of-order protection** (current `setStatus` upsert is idempotent for the common case but has no event-id/period dedup).
+- `APP_BASE_URL` validation at startup (malformed base URL surfaces as a Stripe SDK error, not a config error).
+- Full webhook **integration tests** with a mocked Stripe SDK (currently only the pure status-mapping + pre-Stripe guard paths are unit-tested).
+- A short-lived **tier cache** on `tierForCompany` to avoid a per-request DB read on hot paths.
 
 ### Tiers (target behavior — enforce in Plan 5 / feature flags)
 | Feature | selfhost | cloud/free | cloud/keys | cloud/subscription |
