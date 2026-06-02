@@ -28,19 +28,19 @@ const issueColumnLabels: Record<InboxIssueColumn, string> = {
   assignee: "Assignee",
   project: "Project",
   workspace: "Workspace",
-  parent: "Parent issue",
+  parent: "Parent research task",
   labels: "Tags",
   updated: "Last updated",
 };
 
 const issueColumnDescriptions: Record<InboxIssueColumn, string> = {
-  status: "Issue state chip on the left edge.",
+  status: "Research task state chip on the left edge.",
   id: "Ticket identifier like PAP-1009.",
   assignee: "Assigned agent or board user.",
   project: "Linked project pill with its color.",
-  workspace: "Execution or project workspace used for the issue.",
-  parent: "Parent issue identifier and title.",
-  labels: "Issue labels and tags.",
+  workspace: "Execution or project workspace used for the research task.",
+  parent: "Parent research task identifier and title.",
+  labels: "Research task labels and tags.",
   updated: "Latest visible activity time.",
 };
 
@@ -369,7 +369,7 @@ export function InboxIssueTrailingColumns({
               {parentIdentifier ? (
                 <span className="font-mono">{parentIdentifier}</span>
               ) : (
-                <span className="italic">Sub-issue</span>
+                <span className="italic">Sub-task</span>
               )}
             </span>
           );

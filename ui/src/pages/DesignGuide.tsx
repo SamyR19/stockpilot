@@ -361,7 +361,7 @@ export function DesignGuide() {
 
         <SubSection title="With icons">
           <div className="flex items-center gap-2 flex-wrap">
-            <Button><Plus /> New Issue</Button>
+            <Button><Plus /> New Research Task</Button>
             <Button variant="outline"><Upload /> Upload</Button>
             <Button variant="destructive"><Trash2 /> Delete</Button>
             <Button size="sm"><Plus /> Add</Button>
@@ -671,7 +671,7 @@ export function DesignGuide() {
           </SheetTrigger>
           <SheetContent side="right">
             <SheetHeader>
-              <SheetTitle>Issue Properties</SheetTitle>
+              <SheetTitle>Research Task Properties</SheetTitle>
               <SheetDescription>Edit metadata without leaving the current page.</SheetDescription>
             </SheetHeader>
             <div className="space-y-4 px-4">
@@ -757,7 +757,7 @@ export function DesignGuide() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Issue List</BreadcrumbPage>
+              <BreadcrumbPage>Research Task List</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -786,7 +786,7 @@ export function DesignGuide() {
         <SubSection title="Metric Cards">
           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
             <MetricCard icon={Bot} value={12} label="Active Agents" description="+3 this week" />
-            <MetricCard icon={CircleDot} value={48} label="Open Issues" />
+            <MetricCard icon={CircleDot} value={48} label="Open Research Tasks" />
             <MetricCard icon={DollarSign} value="$1,234" label="Monthly Cost" description="Under budget" />
             <MetricCard icon={Zap} value="99.9%" label="Uptime" />
           </div>
@@ -1387,7 +1387,7 @@ export function DesignGuide() {
         <div className="border border-border rounded-md divide-y divide-border text-sm">
           {[
             ["Cmd+K / Ctrl+K", "Open Command Palette"],
-            ["C", "New Issue (outside inputs)"],
+            ["C", "New Research Task (outside inputs)"],
             ["[", "Toggle Sidebar"],
             ["]", "Toggle Properties Panel"],
 

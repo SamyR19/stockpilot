@@ -3454,12 +3454,12 @@ const IssueChatComposer = forwardRef<IssueChatComposerHandle, IssueChatComposerP
             const sizeLabel = formatAttachmentSize(attachment.size);
             const statusLabel =
               attachment.status === "uploading"
-                ? "Uploading to issue"
+                ? "Uploading to research task"
                 : attachment.status === "error"
                   ? attachment.error ?? "Upload failed"
                   : attachment.inline
                     ? "Inserted inline"
-                    : "Attached to issue";
+                    : "Attached to research task";
             return (
               <div
                 key={attachment.id}
@@ -4186,7 +4186,7 @@ export function IssueChatThread({
   const resolvedEmptyMessage = emptyMessage
     ?? (variant === "embedded"
       ? "No run output yet."
-      : "This issue conversation is empty. Start with a message below.");
+      : "This research task conversation is empty. Start with a message below.");
   const previousErrorBoundaryMessagesRef = useRef<readonly ThreadMessage[] | null>(null);
   const errorBoundaryResetVersionRef = useRef(0);
   if (previousErrorBoundaryMessagesRef.current !== messages) {
@@ -4276,7 +4276,7 @@ export function IssueChatThread({
                   {legacyRecoverySourceIssue ? (
                     <SystemNotice
                       tone="info"
-                      label="Legacy recovery issue"
+                      label="Legacy recovery research task"
                       body={
                         <span>
                           Legacy recovery issue. Newer recovery actions live on the source issue

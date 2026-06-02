@@ -175,7 +175,7 @@ export function CompanyAccess() {
         title: "Member removed",
         body:
           result.reassignedIssueCount > 0
-            ? `${result.reassignedIssueCount} assigned issue${result.reassignedIssueCount === 1 ? "" : "s"} cleaned up.`
+            ? `${result.reassignedIssueCount} assigned research task${result.reassignedIssueCount === 1 ? "" : "s"} cleaned up.`
             : undefined,
         tone: "success",
       });
@@ -449,14 +449,14 @@ export function CompanyAccess() {
                 <div className="text-sm text-muted-foreground">{removingMember.user?.email || removingMember.principalId}</div>
                 <div className="mt-2 text-sm text-muted-foreground">
                   {assignedIssuesQuery.isLoading
-                    ? "Checking assigned issues..."
-                    : `${assignedIssues.length} open assigned issue${assignedIssues.length === 1 ? "" : "s"}`}
+                    ? "Checking assigned research tasks..."
+                    : `${assignedIssues.length} open assigned research task${assignedIssues.length === 1 ? "" : "s"}`}
                 </div>
               </div>
 
               {assignedIssues.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">Issue reassignment</div>
+                  <div className="text-sm font-medium">Research task reassignment</div>
                   <select
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                     value={reassignmentTarget}

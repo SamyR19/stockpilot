@@ -24,7 +24,7 @@ const noop = async () => {};
 
 const highlights = [
   "Running assistant replies with streamed text, reasoning, tool cards, and background status notes",
-  "Historical issue events and linked runs rendered inline with the chat timeline",
+  "Historical research task events and linked runs rendered inline with the chat timeline",
   "Queued user messages, settled assistant comments, and feedback controls",
   "Submitting (pending) message bubble with Sending... label and reduced opacity",
   "Empty and disabled-composer states without relying on live backend data",
@@ -346,7 +346,7 @@ export function IssueChatUxLab() {
               agentMap={issueChatUxAgentMap}
               currentUserId="user-1"
               onAdd={noop}
-              composerDisabledReason="This workspace is closed, so new chat replies are disabled until the issue is reopened."
+              composerDisabledReason="This workspace is closed, so new chat replies are disabled until the research task is reopened."
               draftKey="issue-chat-ux-lab-empty"
               enableLiveTranscriptPolling={false}
             />

@@ -26,9 +26,9 @@ const surfaceOptions: Array<{
   },
   {
     id: "live",
-    label: "Issue Widget",
+    label: "Research Task Widget",
     eyebrow: "Live stream",
-    description: "The issue-detail live run widget, optimized for following an active run without leaving the task page.",
+    description: "The research-task-detail live run widget, optimized for following an active run without leaving the task page.",
     icon: RadioTower,
   },
   {

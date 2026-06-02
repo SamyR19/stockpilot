@@ -82,10 +82,10 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
 };
 
 const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
-  "issue.created": "created the issue",
-  "issue.updated": "updated the issue",
-  "issue.checked_out": "checked out the issue",
-  "issue.released": "released the issue",
+  "issue.created": "created the research task",
+  "issue.updated": "updated the research task",
+  "issue.checked_out": "checked out the research task",
+  "issue.released": "released the research task",
   "issue.comment_added": "added a comment",
   "issue.comment_cancelled": "cancelled a queued comment",
   "issue.feedback_vote_saved": "saved feedback on an AI output",
@@ -102,9 +102,9 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.monitor_skipped": "skipped a monitor",
   "issue.monitor_exhausted": "exhausted a monitor",
   "issue.monitor_recovery_wake_queued": "queued a monitor recovery wake",
-  "issue.monitor_recovery_issue_created": "created a monitor recovery issue",
+  "issue.monitor_recovery_issue_created": "created a monitor recovery research task",
   "issue.monitor_escalated_to_board": "escalated a monitor to the board",
-  "issue.deleted": "deleted the issue",
+  "issue.deleted": "deleted the research task",
   "issue.successful_run_handoff_required": "Run finished without a clear next step",
   "issue.successful_run_handoff_resolved": "Next step chosen",
   "issue.successful_run_handoff_escalated": "Run finished without a next step - recovery escalated",
@@ -273,7 +273,7 @@ function formatIssueUpdatedAction(details: ActivityDetails, options: ActivityFor
   }
   if (details.assigneeAgentId !== undefined || details.assigneeUserId !== undefined) {
     const assigneeName = formatAssigneeName(details, options);
-    parts.push(assigneeName ? `assigned the issue to ${assigneeName}` : "unassigned the issue");
+    parts.push(assigneeName ? `assigned the research task to ${assigneeName}` : "unassigned the research task");
   }
   if (details.title !== undefined) parts.push("updated the title");
   if (details.description !== undefined) parts.push("updated the description");

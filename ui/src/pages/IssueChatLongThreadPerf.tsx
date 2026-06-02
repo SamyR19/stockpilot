@@ -119,7 +119,7 @@ export function IssueChatLongThreadPerf() {
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
             Deterministic local fixture for measuring the current direct-render issue chat path with
             hundreds of merged thread rows, markdown-heavy assistant bodies, linked runs, documents,
-            sub-issues, and sidebar context.
+            sub-tasks, and sidebar context.
           </p>
         </div>
         <div className="grid min-w-[280px] grid-cols-2 gap-2">
@@ -145,7 +145,7 @@ export function IssueChatLongThreadPerf() {
 
           <Card className="border-border/70">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Sub-issues</CardTitle>
+              <CardTitle className="text-base">Sub-tasks</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {fixture.subIssues.map((subIssue, index) => (

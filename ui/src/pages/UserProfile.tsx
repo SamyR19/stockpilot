@@ -219,7 +219,7 @@ export function UserProfile() {
       (data?.topAgents ?? []).map((row) => ({
         key: row.agentId ?? "unknown",
         label: row.agentName ?? (row.agentId ? row.agentId.slice(0, 8) : "unknown"),
-        sublabel: "Issue-linked usage",
+        sublabel: "Research-task-linked usage",
         costCents: row.costCents,
         inputTokens: row.inputTokens,
         cachedInputTokens: row.cachedInputTokens,
@@ -351,7 +351,7 @@ export function UserProfile() {
       </div>
 
       <div className="grid gap-10 xl:grid-cols-2">
-        <UsageList title="Agent attribution" empty="No issue-linked token usage yet." rows={agentUsageRows} />
+        <UsageList title="Agent attribution" empty="No research-task-linked token usage yet." rows={agentUsageRows} />
         <UsageList title="Provider mix" empty="No provider usage attributed yet." rows={providerUsageRows} />
       </div>
     </div>
