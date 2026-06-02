@@ -132,7 +132,7 @@ export function Sidebar() {
           <SidebarNavItem to="/billing" label="Billing" icon={CreditCard} />
         </SidebarSection>
 
-        <SidebarSection label="Company">
+        <SidebarSection label="Workspace">
           <SidebarNavItem to="/org" label="Org" icon={Network} />
           <SidebarNavItem to="/skills" label="Skills" icon={Boxes} />
           <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />

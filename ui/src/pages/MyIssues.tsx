@@ -27,7 +27,7 @@ export function MyIssues() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={ListTodo} message="Select a company to view your research tasks." />;
+    return <EmptyState icon={ListTodo} message="Select a workspace to view your research tasks." />;
   }
 
   if (isLoading) {

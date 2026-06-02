@@ -102,7 +102,7 @@ export function Alerts() {
     createMutation.mutate()
   }
 
-  if (!selectedCompanyId) return <EmptyState icon={Bell} message="Select a company to manage alerts." />
+  if (!selectedCompanyId) return <EmptyState icon={Bell} message="Select a workspace to manage alerts." />
   if (isLoading) return <PageSkeleton />
 
   return (

@@ -64,7 +64,7 @@ export function InstanceAccess() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.userCompanyAccess(selectedUserId!) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.adminUsers(search) });
-      pushToast({ title: "Company access updated", tone: "success" });
+      pushToast({ title: "Workspace access updated", tone: "success" });
     },
   });
 
@@ -180,7 +180,7 @@ export function InstanceAccess() {
 
               <div className="space-y-3">
                 <div>
-                  <h2 className="text-sm font-semibold">Company access</h2>
+                  <h2 className="text-sm font-semibold">Workspace access</h2>
                   <p className="text-sm text-muted-foreground">
                     Toggle company membership for this user. New access defaults to an active operator membership.
                   </p>

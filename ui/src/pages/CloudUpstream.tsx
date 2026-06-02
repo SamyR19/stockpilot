@@ -76,7 +76,7 @@ export function CloudUpstream() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
+      { label: selectedCompany?.name ?? "Workspace", href: "/dashboard" },
       { label: "Settings", href: "/company/settings" },
       { label: "Cloud upstream" },
     ]);
@@ -204,7 +204,7 @@ export function CloudUpstream() {
   }
 
   if (!selectedCompanyId || !selectedCompany) {
-    return <div className="text-sm text-muted-foreground">Select a company to configure cloud upstream.</div>;
+    return <div className="text-sm text-muted-foreground">Select a workspace to configure cloud upstream.</div>;
   }
 
   if (experimentalQuery.isLoading) {

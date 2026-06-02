@@ -142,7 +142,7 @@ export function Portfolio() {
   }
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={TrendingUp} message="Select a company to view portfolio." />
+    return <EmptyState icon={TrendingUp} message="Select a workspace to view portfolio." />
   }
 
   if (connLoading) return <PageSkeleton />

@@ -154,7 +154,7 @@ export function Market() {
     if (TICKER_RE.test(val)) setActiveTicker(val)
   }
 
-  if (!selectedCompanyId) return <EmptyState icon={BarChart2} message="Select a company to use market data." />
+  if (!selectedCompanyId) return <EmptyState icon={BarChart2} message="Select a workspace to use market data." />
 
   return (
     <div className="space-y-6 p-6">

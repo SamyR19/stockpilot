@@ -101,7 +101,7 @@ export function Activity() {
   }, [data]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={History} message="Select a company to view activity." />;
+    return <EmptyState icon={History} message="Select a workspace to view activity." />;
   }
 
   if (isLoading) {

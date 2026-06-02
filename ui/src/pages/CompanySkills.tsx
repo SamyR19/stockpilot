@@ -292,7 +292,7 @@ type SourceFilter = "all" | "company" | "bundled" | "optional" | "external";
 
 const SOURCE_FILTER_LABELS: Record<SourceFilter, string> = {
   all: "All",
-  company: "Company",
+  company: "Workspace",
   bundled: "Bundled",
   optional: "Optional",
   external: "External",
@@ -2230,7 +2230,7 @@ export function CompanySkills() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Boxes} message="Select a company to manage skills." />;
+    return <EmptyState icon={Boxes} message="Select a workspace to manage skills." />;
   }
 
   function handleAddSkillSource() {

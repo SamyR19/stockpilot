@@ -175,7 +175,7 @@ export function Issues() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={CircleDot} message="Select a company to view research tasks." />;
+    return <EmptyState icon={CircleDot} message="Select a workspace to view research tasks." />;
   }
 
   return (

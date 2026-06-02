@@ -96,7 +96,7 @@ export function Watchlist() {
     addMutation.mutate(val)
   }
 
-  if (!selectedCompanyId) return <EmptyState icon={Eye} message="Select a company to view your watchlist." />
+  if (!selectedCompanyId) return <EmptyState icon={Eye} message="Select a workspace to view your watchlist." />
   if (isLoading) return <PageSkeleton />
 
   return (
