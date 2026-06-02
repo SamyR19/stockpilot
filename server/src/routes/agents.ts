@@ -99,6 +99,36 @@ import {
 import { getTelemetryClient } from "../telemetry.js";
 import { assertEnvironmentSelectionForCompany } from "./environment-selection.js";
 import { recoveryService } from "../services/recovery/service.js";
+import {
+  ALL_AGENT_ROLES,
+  canUseRole,
+  type AgentRole as FinanceAgentRole,
+  type UserTier,
+} from "@stockpilotai/feature-flags";
+import { createSubscriptionService } from "../services/subscription.js";
+import { isCloudMode } from "../config.js";
+
+/**
+ * Gate a StockPilot finance agent role behind the company's subscription tier.
+ * Throws a 403 when the tier may not use the role. Only finance roles in
+ * {@link ALL_AGENT_ROLES} are subject to this check.
+ */
+export function assertRoleAllowedForTier(role: FinanceAgentRole, tier: UserTier): void {
+  if (!canUseRole(role, tier)) {
+    const err = new Error(
+      `The "${role}" agent role requires a paid plan or your own API keys. Upgrade to unlock all roles.`,
+    ) as Error & { statusCode?: number };
+    err.statusCode = 403;
+    throw err;
+  }
+}
+
+const FINANCE_AGENT_ROLES = new Set<string>(ALL_AGENT_ROLES);
+
+/** True when the given role string is a StockPilot finance agent role. */
+function isFinanceAgentRole(role: unknown): role is FinanceAgentRole {
+  return typeof role === "string" && FINANCE_AGENT_ROLES.has(role);
+}
 
 const RUN_LOG_DEFAULT_LIMIT_BYTES = 256_000;
 const RUN_LOG_MAX_LIMIT_BYTES = 1024 * 1024;
@@ -178,7 +208,18 @@ export function agentRoutes(
   const companySkills = companySkillService(db);
   const workspaceOperations = workspaceOperationService(db);
   const instanceSettings = instanceSettingsService(db);
+  const subscriptions = createSubscriptionService(db, { isCloudMode });
   const strictSecretsMode = process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true";
+
+  /**
+   * Enforce the subscription-tier gate for StockPilot finance agent roles.
+   * No-op for legacy/non-finance roles so existing agent creation is unaffected.
+   */
+  async function assertFinanceRoleAllowed(companyId: string, role: unknown) {
+    if (!isFinanceAgentRole(role)) return;
+    const tier = await subscriptions.tierForCompany(companyId);
+    assertRoleAllowedForTier(role, tier);
+  }
 
   async function assertAgentEnvironmentSelection(
     companyId: string,
@@ -1958,6 +1999,7 @@ export function agentRoutes(
       sourceIssueIds: _sourceIssueIds,
       ...hireInput
     } = req.body;
+    await assertFinanceRoleAllowed(companyId, hireInput.role);
     hireInput.adapterType = assertKnownAdapterType(hireInput.adapterType);
     const rawHireAdapterConfig = (hireInput.adapterConfig ?? {}) as Record<string, unknown>;
     assertNoNewAgentLegacyPromptTemplate(
@@ -2144,6 +2186,7 @@ export function agentRoutes(
       instructionsBundle,
       ...createInput
     } = req.body;
+    await assertFinanceRoleAllowed(companyId, createInput.role);
     createInput.adapterType = assertKnownAdapterType(createInput.adapterType);
     const rawCreateAdapterConfig = (createInput.adapterConfig ?? {}) as Record<string, unknown>;
     assertNoNewAgentLegacyPromptTemplate(
@@ -2557,6 +2600,9 @@ export function agentRoutes(
     }
 
     const patchData = { ...(req.body as Record<string, unknown>) };
+    if (hasOwn(patchData, "role")) {
+      await assertFinanceRoleAllowed(existing.companyId, patchData.role);
+    }
     const replaceAdapterConfig = patchData.replaceAdapterConfig === true;
     delete patchData.replaceAdapterConfig;
     if (hasOwn(patchData, "adapterConfig")) {
