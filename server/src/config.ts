@@ -57,6 +57,10 @@ export const POLYGON_API_KEY = process.env.POLYGON_API_KEY || undefined
 export const SCHWAB_CLIENT_ID = process.env.SCHWAB_CLIENT_ID || undefined
 export const SCHWAB_CLIENT_SECRET = process.env.SCHWAB_CLIENT_SECRET || undefined
 export const SCHWAB_REDIRECT_URI = process.env.SCHWAB_REDIRECT_URI || 'http://localhost:3100/api/broker/schwab/callback'
+export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || undefined
+export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || undefined
+export const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID || undefined
+export const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:5173'
 
 const TAILSCALE_DETECT_TIMEOUT_MS = 3000;
 
@@ -107,6 +111,10 @@ export interface Config {
   schwabClientId?: string
   schwabClientSecret?: string
   schwabRedirectUri: string
+  stripeSecretKey: string | undefined;
+  stripeWebhookSecret: string | undefined;
+  stripePriceId: string | undefined;
+  appBaseUrl: string;
 }
 
 function detectTailnetBindHost(): string | undefined {
@@ -360,5 +368,9 @@ export function loadConfig(): Config {
     schwabClientId: SCHWAB_CLIENT_ID,
     schwabClientSecret: SCHWAB_CLIENT_SECRET,
     schwabRedirectUri: SCHWAB_REDIRECT_URI,
+    stripeSecretKey: STRIPE_SECRET_KEY,
+    stripeWebhookSecret: STRIPE_WEBHOOK_SECRET,
+    stripePriceId: STRIPE_PRICE_ID,
+    appBaseUrl: APP_BASE_URL,
   };
 }
