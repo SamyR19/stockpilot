@@ -58,3 +58,7 @@ tests/release-smoke/playwright-report/
 .superpowers/
 .claude/worktrees/
 .herenow
+
+# Vercel
+.vercel/output
+.vercel/cache
