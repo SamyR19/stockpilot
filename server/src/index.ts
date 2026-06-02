@@ -685,10 +685,12 @@ export async function startServer(): Promise<StartedServer> {
   process.env.PAPERCLIP_RUNTIME_API_CANDIDATES_JSON = JSON.stringify(runtimeApiCandidates);
   process.env.PAPERCLIP_API_URL = configuredApiUrl;
   
-  setupLiveEventsWebSocketServer(server, db as any, {
-    deploymentMode: config.deploymentMode,
-    resolveSessionFromHeaders,
-  });
+  if (!config.disableLiveEventsWs) {
+    setupLiveEventsWebSocketServer(server, db as any, {
+      deploymentMode: config.deploymentMode,
+      resolveSessionFromHeaders,
+    });
+  }
 
   void reconcilePersistedRuntimeServicesOnStartup(db as any)
     .then((result) => {

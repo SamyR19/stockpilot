@@ -61,6 +61,7 @@ export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || undefined
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || undefined
 export const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID || undefined
 export const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:5173'
+export const DISABLE_LIVE_EVENTS_WS = process.env.PAPERCLIP_DISABLE_LIVE_EVENTS_WS === 'true'
 
 const TAILSCALE_DETECT_TIMEOUT_MS = 3000;
 
@@ -115,6 +116,7 @@ export interface Config {
   stripeWebhookSecret: string | undefined;
   stripePriceId: string | undefined;
   appBaseUrl: string;
+  disableLiveEventsWs: boolean;
 }
 
 function detectTailnetBindHost(): string | undefined {
@@ -372,5 +374,6 @@ export function loadConfig(): Config {
     stripeWebhookSecret: STRIPE_WEBHOOK_SECRET,
     stripePriceId: STRIPE_PRICE_ID,
     appBaseUrl: APP_BASE_URL,
+    disableLiveEventsWs: DISABLE_LIVE_EVENTS_WS,
   };
 }
