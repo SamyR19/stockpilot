@@ -68,6 +68,8 @@ Plans live in `docs/superpowers/plans/YYYY-MM-DD-plan-N-*.md`. Each plan is exec
 - `APP_BASE_URL` validation at startup (malformed base URL surfaces as a Stripe SDK error, not a config error).
 - Full webhook **integration tests** with a mocked Stripe SDK (currently only the pure status-mapping + pre-Stripe guard paths are unit-tested).
 - A short-lived **tier cache** on `tierForCompany` to avoid a per-request DB read on hot paths.
+- **Consolidate the subscription-service instances**: `createSubscriptionService` is currently instantiated in four places (`app.ts` ×2, `agents.ts`, `heartbeat.ts`). Stateless today, but a single shared instance should be threaded through before any per-instance state (cache) is added.
+- **Tier policy on data-key delete**: removing a data key does not revert a cloud company from `keys` back to `free` (intentional "once unlocked, stays" assumption). Confirm this is the desired policy and document it.
 
 ### Tiers (target behavior — enforce in Plan 5 / feature flags)
 | Feature | selfhost | cloud/free | cloud/keys | cloud/subscription |
