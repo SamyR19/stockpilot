@@ -29,10 +29,24 @@ async function getOrCreateHandler(): Promise<Handler> {
   const db = createDb(config.databaseUrl);
 
   try {
-    await applyPendingMigrations(config.databaseUrl);
+    await applyPendingMigrations(config.databaseUrl!);
     logger.info("Database migrations applied (or already up to date)");
   } catch (err) {
-    logger.warn({ err }, "Migration check failed — continuing");
+    // Only swallow connection-level transient errors (e.g. a brief Supabase
+    // pooler hiccup). Any structural migration failure (missing column, failed
+    // statement) re-throws so Vercel cold-start reports a clean 500 rather
+    // than serving requests against a broken schema.
+    const msg = err instanceof Error ? err.message.toLowerCase() : "";
+    const isTransient =
+      msg.includes("connect") ||
+      msg.includes("timeout") ||
+      msg.includes("econnrefused") ||
+      msg.includes("enotfound");
+    if (isTransient) {
+      logger.warn({ err }, "Migration check failed (transient) — continuing");
+    } else {
+      throw err; // structural failure — fail the cold start
+    }
   }
 
   const storageService = createStorageServiceFromConfig(config);
@@ -79,7 +93,15 @@ export default async function vercelHandler(
 ) {
   try {
     const h = await getOrCreateHandler();
-    h(req as any, res as any, () => {});
+    h(req as any, res as any, (err?: unknown) => {
+      // next() reached the end of the middleware stack without sending a response,
+      // or next(err) was called. Respond with 500 rather than hanging.
+      if (!res.headersSent) {
+        const status = err ? 500 : 404;
+        res.writeHead(status, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err instanceof Error ? err.message : "Not found" }));
+      }
+    });
   } catch (err) {
     logger.error({ err }, "Vercel handler failed to initialize");
     res.writeHead(500, { "Content-Type": "application/json" });
