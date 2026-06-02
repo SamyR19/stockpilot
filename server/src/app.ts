@@ -322,9 +322,17 @@ export async function createApp(
     resolveTier: async (req) => {
       if (!appConfig.isCloudMode) return 'selfhost';
       // Agent actors carry a single companyId; board users may belong to several.
-      const companyId =
-        req.actor.companyId ??
-        (Array.isArray(req.actor.companyIds) ? req.actor.companyIds[0] : undefined);
+      // Market requests carry no companyId, so for a multi-membership board user
+      // we tier against their first membership. This is a deliberate, conservative
+      // heuristic — refine once market requests become company-scoped.
+      const companyIds = Array.isArray(req.actor.companyIds) ? req.actor.companyIds : undefined;
+      const companyId = req.actor.companyId ?? companyIds?.[0];
+      if (!req.actor.companyId && companyIds && companyIds.length > 1) {
+        logger.debug(
+          { companyIds, chosenCompanyId: companyId },
+          "Market tier: multi-membership board user, tiering against first membership",
+        );
+      }
       // No resolvable company in cloud mode -> safe default of 'free' (Yahoo only).
       if (!companyId) return 'free';
       return marketSubscriptionService.tierForCompany(companyId);

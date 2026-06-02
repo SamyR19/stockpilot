@@ -46,6 +46,12 @@ function sendMarketError(res: Response, err: unknown, fallbackMessage: string): 
   return res.status(502).json({ error: fallbackMessage })
 }
 
+// Cap the client cache so it can't grow unbounded. Today there are only a few
+// distinct provider combinations (global keys → ~2 entries), but planned
+// per-company keying could expand the keyspace. Map preserves insertion order,
+// so evicting the first key gives simple FIFO eviction — adequate here.
+const MAX_CLIENT_CACHE = 64
+
 const TICKER_REGEX = /^[A-Z0-9.\-^=]{1,20}$/i
 const tickerSchema = z.string().regex(TICKER_REGEX, 'Invalid ticker symbol')
 
@@ -71,6 +77,10 @@ export function createMarketRouter(deps: MarketRouterDeps): Router {
     const cacheKey = `${providers.alphaVantageApiKey ?? ''}|${providers.polygonApiKey ?? ''}`
     let client = clientCache.get(cacheKey)
     if (!client) {
+      if (clientCache.size >= MAX_CLIENT_CACHE) {
+        const oldest = clientCache.keys().next().value
+        if (oldest !== undefined) clientCache.delete(oldest)
+      }
       client = new MarketDataClient(providers)
       clientCache.set(cacheKey, client)
     }
