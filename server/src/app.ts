@@ -49,6 +49,8 @@ import { createAlertsRouter } from "./routes/alerts.js";
 import { createApiKeysRouter } from "./routes/api-keys.js";
 import { secretService } from "./services/index.js";
 import { createSubscriptionService } from "./services/subscription.js";
+import { createRunLimitService } from "./services/run-limit.js";
+import { createBillingRouter } from "./routes/billing.js";
 import { getConfiguredSecretProvider } from "./secrets/configured-provider.js";
 import { loadConfig } from "./config.js";
 import { readBrandedStaticIndexHtml } from "./static-index-html.js";
@@ -169,6 +171,10 @@ export async function createApp(
     limit: PORTABLE_JSON_BODY_LIMIT,
     verify: captureRawBody,
   }));
+  // The Stripe webhook needs the RAW request body to verify its signature.
+  // Register a raw parser for this exact path BEFORE the global express.json()
+  // below so the JSON parser does not consume/transform the webhook body.
+  app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
   app.use(express.json({
     limit: DEFAULT_JSON_BODY_LIMIT,
     verify: captureRawBody,
@@ -384,6 +390,18 @@ export async function createApp(
     },
   };
   const subscriptionService = createSubscriptionService(db, { isCloudMode: appConfig.isCloudMode });
+  const runLimitService = createRunLimitService(db);
+  api.use('/billing', createBillingRouter({
+    subscription: subscriptionService,
+    runLimit: runLimitService,
+    config: {
+      stripeSecretKey: appConfig.stripeSecretKey,
+      stripeWebhookSecret: appConfig.stripeWebhookSecret,
+      stripePriceId: appConfig.stripePriceId,
+      appBaseUrl: appConfig.appBaseUrl,
+      isCloudMode: appConfig.isCloudMode,
+    },
+  }));
   api.use('/api-keys', createApiKeysRouter({
     secrets: apiKeySecretsAdapter,
     subscription: subscriptionService,
