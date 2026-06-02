@@ -334,7 +334,14 @@ export async function createApp(
       if (existing) {
         return secrets.rotate(existing.id, { value });
       }
-      return secrets.create(companyId, { name, key: name, provider: apiKeySecretsProvider, value });
+      try {
+        return await secrets.create(companyId, { name, key: name, provider: apiKeySecretsProvider, value });
+      } catch (err) {
+        // Concurrent create won the race — fall back to rotating the now-existing secret.
+        const now = await secrets.getByName(companyId, name);
+        if (now) return secrets.rotate(now.id, { value });
+        throw err;
+      }
     },
     deleteSecretByName: async (companyId: string, name: string) => {
       const existing = await secrets.getByName(companyId, name);

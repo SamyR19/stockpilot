@@ -43,4 +43,38 @@ describe('api-keys router', () => {
     expect(res.status).toBe(200)
     expect(res.body.keys).toContain('ai.anthropic')
   })
+  it('deletes a key', async () => {
+    secrets.deleteSecretByName.mockResolvedValueOnce(true)
+    const res = await request(app()).delete(`/api/api-keys/${COMPANY}/ai/anthropic`)
+    expect(res.status).toBe(204)
+  })
+  it('rejects delete for an unknown provider', async () => {
+    const res = await request(app()).delete(`/api/api-keys/${COMPANY}/ai/bogus`)
+    expect(res.status).toBe(400)
+    expect(secrets.deleteSecretByName).not.toHaveBeenCalled()
+  })
+  it('returns 404 deleting a non-existent key', async () => {
+    secrets.deleteSecretByName.mockResolvedValueOnce(false)
+    const res = await request(app()).delete(`/api/api-keys/${COMPANY}/ai/anthropic`)
+    expect(res.status).toBe(404)
+  })
+  it('still returns 201 when setStatus rejects after a data-key save', async () => {
+    const a = express()
+    a.use(express.json())
+    a.use((req, _res, next) => {
+      ;(req as any).actor = { type: 'board', source: 'local_implicit' }
+      next()
+    })
+    a.use(
+      '/api/api-keys',
+      createApiKeysRouter({
+        secrets: secrets as any,
+        subscription: { setStatus: vi.fn(async () => { throw new Error('boom') }) } as any,
+        isCloudMode: true,
+      }),
+    )
+    const res = await request(a).post(`/api/api-keys/${COMPANY}`).send({ kind: 'data', provider: 'alpha_vantage', value: 'av-test' })
+    expect(res.status).toBe(201)
+    expect(secrets.setSecret).toHaveBeenCalled()
+  })
 })

@@ -1,14 +1,21 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { assertAuthenticated, assertCompanyAccess } from './authz.js'
+import { logger } from '../middleware/logger.js'
 
 const AI_PROVIDERS = ['anthropic', 'openai', 'gemini'] as const
 const DATA_PROVIDERS = ['alpha_vantage', 'polygon'] as const
 
+function isValidProvider(kind: 'ai' | 'data', provider: string): boolean {
+  return kind === 'ai'
+    ? (AI_PROVIDERS as readonly string[]).includes(provider)
+    : (DATA_PROVIDERS as readonly string[]).includes(provider)
+}
+
 const setKeySchema = z.object({
   kind: z.enum(['ai', 'data']),
   provider: z.string().min(1),
-  value: z.string().min(1).max(500),
+  value: z.string().min(1).max(4096),
 })
 
 export interface ApiKeysDeps {
@@ -49,14 +56,18 @@ export function createApiKeysRouter(deps: ApiKeysDeps): Router {
     const parse = setKeySchema.safeParse(req.body)
     if (!parse.success) return res.status(400).json({ error: 'Invalid key payload' })
     const { kind, provider, value } = parse.data
-    const valid =
-      kind === 'ai'
-        ? (AI_PROVIDERS as readonly string[]).includes(provider)
-        : (DATA_PROVIDERS as readonly string[]).includes(provider)
-    if (!valid) return res.status(400).json({ error: `Unknown ${kind} provider: ${provider}` })
+    if (!isValidProvider(kind, provider)) {
+      return res.status(400).json({ error: `Unknown ${kind} provider: ${provider}` })
+    }
     await deps.secrets.setSecret(companyId, keyName(kind, provider), value)
     if (kind === 'data' && deps.isCloudMode) {
-      await deps.subscription.setStatus(companyId, 'keys')
+      try {
+        await deps.subscription.setStatus(companyId, 'keys')
+      } catch (err) {
+        // The key was saved successfully; a failure to flip the tier should not
+        // turn a successful save into a 5xx. The tier can be reconciled later.
+        logger.warn({ companyId, err }, 'failed to set keys tier after saving data key')
+      }
     }
     return res.status(201).json({ ok: true })
   })
@@ -65,7 +76,10 @@ export function createApiKeysRouter(deps: ApiKeysDeps): Router {
     const { companyId, kind, provider } = req.params
     assertCompanyAccess(req, companyId)
     if (kind !== 'ai' && kind !== 'data') return res.status(400).json({ error: 'Invalid kind' })
-    const removed = await deps.secrets.deleteSecretByName(companyId, keyName(kind as 'ai' | 'data', provider))
+    if (!isValidProvider(kind, provider)) {
+      return res.status(400).json({ error: `Unknown ${kind} provider: ${provider}` })
+    }
+    const removed = await deps.secrets.deleteSecretByName(companyId, keyName(kind, provider))
     if (!removed) return res.status(404).json({ error: 'Key not found' })
     return res.status(204).send()
   })
