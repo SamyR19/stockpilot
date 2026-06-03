@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm -w run preflight:workspace-links && pnpm --filter @paperclipai/plugin-sdk build && pnpm --filter @paperclipai/db build && pnpm --filter \"@paperclipai/ui...\" build && rm -rf dist && cp -R ui/dist dist",
+  "buildCommand": "pnpm -w run vercel-build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": null,
