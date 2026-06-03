@@ -83,7 +83,9 @@ ENV NODE_ENV=production \
   PAPERCLIP_DEPLOYMENT_EXPOSURE=private \
   OPENCODE_ALLOW_ALL_MODELS=true
 
-VOLUME ["/paperclip"]
+# NOTE: No `VOLUME` instruction — Railway rejects it. For persistent /paperclip
+# data (secrets master key, instance config) attach a Railway Volume mounted at
+# /paperclip instead. The primary datastore is external Postgres (Supabase).
 EXPOSE 3100
 
 ENTRYPOINT ["docker-entrypoint.sh"]
