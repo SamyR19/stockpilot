@@ -14,7 +14,7 @@
     "storybook": "pnpm --filter @paperclipai/ui storybook",
     "build-storybook": "pnpm --filter @paperclipai/ui build-storybook",
     "build": "pnpm run preflight:workspace-links && pnpm -r build",
-    "vercel-build": "pnpm run preflight:workspace-links && pnpm --filter @paperclipai/plugin-sdk build && pnpm --filter @paperclipai/db build && pnpm --filter \"@paperclipai/ui...\" build && rm -rf dist && cp -R ui/dist dist",
+    "vercel-build": "pnpm run preflight:workspace-links && pnpm --filter @paperclipai/plugin-sdk build && pnpm --filter @paperclipai/db build && pnpm --filter \"@paperclipai/ui...\" build && rm -rf dist && cp -R ui/dist dist && if [ -n \"$INIT_CWD\" ] && [ \"$INIT_CWD\" != \"$PWD\" ]; then rm -rf \"$INIT_CWD/dist\" && cp -R ui/dist \"$INIT_CWD/dist\"; fi",
     "typecheck": "pnpm run preflight:workspace-links && pnpm -r typecheck",
     "typecheck:build-gaps": "pnpm run preflight:workspace-links && node scripts/run-typecheck-build-gaps.mjs",
     "test": "pnpm run test:run",
