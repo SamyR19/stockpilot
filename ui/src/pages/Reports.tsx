@@ -30,7 +30,7 @@ function recommendationBadge(recommendation: string) {
   return <Badge variant="secondary">{recommendation}</Badge>
 }
 
-function ReportCard({ report, onDelete }: { report: ResearchReport; onDelete: () => void }) {
+function ReportCard({ report, onDelete, deleteDisabled }: { report: ResearchReport; onDelete: () => void; deleteDisabled?: boolean }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
@@ -51,6 +51,7 @@ function ReportCard({ report, onDelete }: { report: ResearchReport; onDelete: ()
           variant="ghost"
           size="icon-sm"
           onClick={onDelete}
+          disabled={deleteDisabled}
           aria-label={`Delete report for ${report.ticker}`}
           className="text-muted-foreground hover:text-destructive shrink-0"
         >
@@ -72,16 +73,17 @@ export function Reports() {
     setBreadcrumbs([{ label: "Reports" }])
   }, [setBreadcrumbs])
 
-  const { data: reports, isLoading } = useQuery({
+  const { data: reports, isLoading, isError, error } = useQuery({
     queryKey: queryKeys.research.list(selectedCompanyId!),
     queryFn: () => researchApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (reportId: string) => researchApi.remove(selectedCompanyId!, reportId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.research.list(selectedCompanyId!) }),
+    mutationFn: ({ reportId, companyId }: { reportId: string; companyId: string }) =>
+      researchApi.remove(companyId, reportId),
+    onSuccess: (_data, { companyId }) =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.research.list(companyId) }),
   })
 
   const filtered = useMemo(() => {
@@ -94,6 +96,9 @@ export function Reports() {
   if (!selectedCompanyId)
     return <EmptyState icon={FileText} message="Select a workspace to view research reports." />
   if (isLoading) return <PageSkeleton />
+  if (isError) {
+    return <EmptyState icon={FileText} message={error instanceof Error ? error.message : "Failed to load research reports."} />
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -126,7 +131,8 @@ export function Reports() {
             <ReportCard
               key={report.id}
               report={report}
-              onDelete={() => deleteMutation.mutate(report.id)}
+              onDelete={() => deleteMutation.mutate({ reportId: report.id, companyId: selectedCompanyId! })}
+              deleteDisabled={deleteMutation.isPending && deleteMutation.variables?.reportId === report.id}
             />
           ))}
         </div>
