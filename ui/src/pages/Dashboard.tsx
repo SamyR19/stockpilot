@@ -26,6 +26,7 @@ import { ChartCard, RunActivityChart, PriorityChart, IssueStatusChart, SuccessRa
 import { PageSkeleton } from "../components/PageSkeleton";
 import type { Agent, Issue } from "@paperclipai/shared";
 import { PluginSlotOutlet } from "@/plugins/slots";
+import { FinanceOverview } from "../components/FinanceOverview";
 
 const DASHBOARD_ACTIVITY_LIMIT = 10;
 
@@ -195,6 +196,8 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <FinanceOverview companyId={selectedCompanyId!} />
+
       {error && <p className="text-sm text-destructive">{error.message}</p>}
 
       {hasNoAgents && (
