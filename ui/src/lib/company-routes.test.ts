@@ -37,7 +37,7 @@ describe("company routes", () => {
   });
 
   it("treats finance pages as board routes that need a company prefix", () => {
-    for (const route of ["portfolio", "watchlist", "alerts", "market", "billing"]) {
+    for (const route of ["portfolio", "watchlist", "alerts", "market", "billing", "reports"]) {
       expect(isBoardPathWithoutPrefix(`/${route}`)).toBe(true);
       expect(extractCompanyPrefixFromPath(`/${route}`)).toBeNull();
       expect(applyCompanyPrefix(`/${route}`, "PAP")).toBe(`/PAP/${route}`);

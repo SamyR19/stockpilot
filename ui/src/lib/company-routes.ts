@@ -24,6 +24,7 @@ const BOARD_ROUTE_ROOTS = new Set([
   "alerts",
   "market",
   "billing",
+  "reports",
 ]);
 
 const GLOBAL_ROUTE_ROOTS = new Set(["auth", "invite", "board-claim", "cli-auth", "docs", "instance"]);

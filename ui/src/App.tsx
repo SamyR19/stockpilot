@@ -63,6 +63,7 @@ import { Watchlist } from "./pages/Watchlist";
 import { Alerts } from "./pages/Alerts";
 import { Market } from "./pages/Market";
 import { Billing } from "./pages/Billing";
+import { Reports } from "./pages/Reports";
 import { useCompany } from "./context/CompanyContext";
 import { useDialogActions } from "./context/DialogContext";
 import { loadLastInboxTab } from "./lib/inbox";
@@ -155,6 +156,7 @@ function boardRoutes() {
       <Route path="alerts" element={<Alerts />} />
       <Route path="market" element={<Market />} />
       <Route path="billing" element={<Billing />} />
+      <Route path="reports" element={<Reports />} />
       <Route path="*" element={<NotFoundPage scope="board" />} />
     </>
   );

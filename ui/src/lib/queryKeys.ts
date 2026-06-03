@@ -220,6 +220,9 @@ export const queryKeys = {
   watchlist: {
     list: (companyId: string) => ["watchlist", companyId] as const,
   },
+  research: {
+    list: (companyId: string, ticker?: string) => ["research", companyId, ticker ?? "all"] as const,
+  },
   alerts: {
     list: (companyId: string) => ["alerts", companyId] as const,
   },
