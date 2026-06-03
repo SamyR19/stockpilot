@@ -66,6 +66,7 @@ function PortfolioSnapshot({ companyId }: { companyId: string }) {
   const { data: connections } = useQuery({
     queryKey: queryKeys.broker.connections(companyId),
     queryFn: () => brokerApi.listConnections(companyId),
+    staleTime: 60_000,
     retry: false,
   });
 
@@ -75,10 +76,22 @@ function PortfolioSnapshot({ companyId }: { companyId: string }) {
     queryKey: queryKeys.broker.portfolio(companyId),
     queryFn: () => brokerApi.getPortfolio(companyId),
     enabled: hasConnections,
+    staleTime: 60_000,
     retry: false,
   });
 
-  if (connections && !hasConnections) {
+  if (connections === undefined) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Portfolio
+        </h3>
+        <p className="mt-2 text-2xl font-semibold text-muted-foreground">—</p>
+      </div>
+    );
+  }
+
+  if (!hasConnections) {
     return (
       <div className="rounded-lg border border-border bg-card p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -198,7 +211,7 @@ export function FinanceOverview({ companyId }: { companyId: string }) {
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Market
         </h3>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {INDICES.map((idx) => (
             <IndexCard key={idx.ticker} ticker={idx.ticker} label={idx.label} />
           ))}

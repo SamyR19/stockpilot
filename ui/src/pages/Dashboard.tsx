@@ -196,7 +196,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <FinanceOverview companyId={selectedCompanyId!} />
+      {selectedCompanyId && <FinanceOverview companyId={selectedCompanyId} />}
 
       {error && <p className="text-sm text-destructive">{error.message}</p>}
 
