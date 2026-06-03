@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm run preflight:workspace-links && pnpm --filter @paperclipai/plugin-sdk build && pnpm --filter @paperclipai/db build && pnpm --filter \"@paperclipai/ui...\" build",
+  "buildCommand": "pnpm -w run preflight:workspace-links && pnpm --filter @paperclipai/plugin-sdk build && pnpm --filter @paperclipai/db build && pnpm --filter \"@paperclipai/ui...\" build",
   "outputDirectory": "ui/dist",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": null,
