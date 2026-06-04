@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@paperclipai/skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-05-31T18:06:11.126Z",
+  "generatedAt": "2026-06-04T04:50:03.165Z",
   "skills": [
     {
       "id": "paperclipai:bundled:docs:doc-maintenance",
@@ -317,6 +317,198 @@
         }
       ],
       "contentHash": "sha256:f22a9ed696e6614c6db2757a149f48b3295e81f78c27d065d9cb164cf4f8a9bd"
+    },
+    {
+      "id": "paperclipai:optional:finance:earnings-scout",
+      "key": "paperclipai/optional/finance/earnings-scout",
+      "kind": "optional",
+      "category": "finance",
+      "slug": "earnings-scout",
+      "name": "earnings-scout",
+      "description": "Track upcoming earnings, estimates, and post-report reactions for tracked tickers.",
+      "path": "catalog/optional/finance/earnings-scout",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "researcher"
+      ],
+      "requires": [],
+      "tags": [
+        "finance",
+        "analyst",
+        "earnings"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 1515,
+          "sha256": "07c0697c38c1a0b8366bd8aaf4b78549728f7a58a3ad155dbbf045d7b2ca1725"
+        }
+      ],
+      "contentHash": "sha256:e2e5a894ff709e625a5791dfbb86c1813ddf3cc3e2609334d78eb7d39e034fa5"
+    },
+    {
+      "id": "paperclipai:optional:finance:equity-analyst",
+      "key": "paperclipai/optional/finance/equity-analyst",
+      "kind": "optional",
+      "category": "finance",
+      "slug": "equity-analyst",
+      "name": "equity-analyst",
+      "description": "Produce deep fundamental research on individual stocks with a clear BUY/HOLD/SELL recommendation.",
+      "path": "catalog/optional/finance/equity-analyst",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "researcher"
+      ],
+      "requires": [],
+      "tags": [
+        "finance",
+        "analyst",
+        "fundamental"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 1771,
+          "sha256": "c9bb02596ed02196dc56cf09d549787413aca4c6e9fe5ca115285c5ca57b649f"
+        }
+      ],
+      "contentHash": "sha256:ebcdd22feea102470c5ba0168d9c057e18b7304454b50f44a7708f26cb10808f"
+    },
+    {
+      "id": "paperclipai:optional:finance:macro-researcher",
+      "key": "paperclipai/optional/finance/macro-researcher",
+      "kind": "optional",
+      "category": "finance",
+      "slug": "macro-researcher",
+      "name": "macro-researcher",
+      "description": "Analyze macro conditions (rates, inflation, growth) and their impact on markets and sectors.",
+      "path": "catalog/optional/finance/macro-researcher",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "researcher"
+      ],
+      "requires": [],
+      "tags": [
+        "finance",
+        "analyst",
+        "macro"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 1515,
+          "sha256": "40089a815adecd5a1a02eb247aaee1550a30ac7b588283afbdecc0381e0047f9"
+        }
+      ],
+      "contentHash": "sha256:f30188d17de9681bbac29e088a55b5669706fddd91e4e04835fc28401c1cbba3"
+    },
+    {
+      "id": "paperclipai:optional:finance:news-sentinel",
+      "key": "paperclipai/optional/finance/news-sentinel",
+      "kind": "optional",
+      "category": "finance",
+      "slug": "news-sentinel",
+      "name": "news-sentinel",
+      "description": "Monitor and summarize market-moving news and sentiment for tracked tickers.",
+      "path": "catalog/optional/finance/news-sentinel",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "researcher"
+      ],
+      "requires": [],
+      "tags": [
+        "finance",
+        "analyst",
+        "news"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 1491,
+          "sha256": "43d26d275d37a3eb413de57c2758b2bee8b7b3a208d9f08186d029f7bd42d10e"
+        }
+      ],
+      "contentHash": "sha256:db463574790b73345f11ccbf17d3d27e035a61ca4ae33aa4839fc49b6b49f209"
+    },
+    {
+      "id": "paperclipai:optional:finance:portfolio-manager",
+      "key": "paperclipai/optional/finance/portfolio-manager",
+      "kind": "optional",
+      "category": "finance",
+      "slug": "portfolio-manager",
+      "name": "portfolio-manager",
+      "description": "Review portfolio holdings, allocation, and risk; surface actionable observations (not advice).",
+      "path": "catalog/optional/finance/portfolio-manager",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "researcher"
+      ],
+      "requires": [],
+      "tags": [
+        "finance",
+        "analyst",
+        "portfolio"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 1596,
+          "sha256": "c021655b568dba15dfbfbd4e1ceecdb8926e42f69f2018b4917a71169c70df6d"
+        }
+      ],
+      "contentHash": "sha256:2ec5412a98a1e636342ca3109d5daccd20e97ef17c22903a9dacfc29af366b17"
+    },
+    {
+      "id": "paperclipai:optional:finance:quant-analyst",
+      "key": "paperclipai/optional/finance/quant-analyst",
+      "kind": "optional",
+      "category": "finance",
+      "slug": "quant-analyst",
+      "name": "quant-analyst",
+      "description": "Run quantitative/statistical analysis on prices and factors to find signals and anomalies.",
+      "path": "catalog/optional/finance/quant-analyst",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "researcher"
+      ],
+      "requires": [],
+      "tags": [
+        "finance",
+        "analyst",
+        "quant"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 1616,
+          "sha256": "2aa3e517b4d59723d3e1e6bc4810a20478bc49bb92ceafe261cd6e04d1cf2986"
+        }
+      ],
+      "contentHash": "sha256:85be88a653373ac5f80405e3d398031d047b29bd2fac25901cab298eca7bc41f"
     },
     {
       "id": "paperclipai:optional:product:design-critique",

@@ -14,6 +14,12 @@ const EXPECTED_BUNDLED_KEYS = [
 const EXPECTED_OPTIONAL_KEYS = [
   "paperclipai/optional/browser/agent-browser",
   "paperclipai/optional/content/release-announcement",
+  "paperclipai/optional/finance/earnings-scout",
+  "paperclipai/optional/finance/equity-analyst",
+  "paperclipai/optional/finance/macro-researcher",
+  "paperclipai/optional/finance/news-sentinel",
+  "paperclipai/optional/finance/portfolio-manager",
+  "paperclipai/optional/finance/quant-analyst",
   "paperclipai/optional/product/design-critique",
 ];
 
