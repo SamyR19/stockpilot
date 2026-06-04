@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import { eq, and } from 'drizzle-orm'
-import { alertRules } from '@paperclipai/db'
+import { eq, and, desc } from 'drizzle-orm'
+import { alertRules, alertEvents } from '@paperclipai/db'
 import type { Db } from '@paperclipai/db'
 
 const ALERT_CONDITION_TYPES = ["price_above", "price_below", "percent_change", "volume_spike", "earnings_date"] as const
@@ -53,6 +53,32 @@ export function createAlertsRouter(db: Db): Router {
       .from(alertRules)
       .where(eq(alertRules.companyId, companyId))
     return res.json(rows)
+  })
+
+  // GET /api/alerts/:companyId/events — recent fired events
+  router.get('/:companyId/events', async (req, res, next) => {
+    try {
+      const { companyId } = req.params
+      assertCompanyAccess(req, companyId)
+      const limit = Math.min(Number(req.query.limit) || 50, 200)
+      const rows = await db
+        .select({
+          id: alertEvents.id,
+          ticker: alertEvents.ticker,
+          conditionType: alertRules.conditionType,
+          value: alertEvents.value,
+          triggeredAt: alertEvents.triggeredAt,
+          notified: alertEvents.notified,
+        })
+        .from(alertEvents)
+        .innerJoin(alertRules, eq(alertEvents.ruleId, alertRules.id))
+        .where(eq(alertEvents.companyId, companyId))
+        .orderBy(desc(alertEvents.triggeredAt))
+        .limit(limit)
+      res.json(rows)
+    } catch (err) {
+      next(err)
+    }
   })
 
   // POST /api/alerts/:companyId
