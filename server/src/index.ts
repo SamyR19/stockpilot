@@ -41,6 +41,8 @@ import {
 import { createFeedbackTraceShareClientFromConfig } from "./services/feedback-share-client.js";
 import { buildRuntimeApiCandidateUrls, choosePrimaryRuntimeApiUrl } from "./runtime-api.js";
 import { createPluginWorkerManager } from "./services/plugin-worker-manager.js";
+import { createAlertEngine } from "./services/alert-engine.js";
+import { createDefaultMarketClient } from "./services/market-client.js";
 import { createStorageServiceFromConfig } from "./storage/index.js";
 import { printStartupBanner } from "./startup-banner.js";
 import { getBoardClaimWarningUrl, initializeBoardClaimChallenge } from "./board-claim.js";
@@ -721,6 +723,13 @@ export async function startServer(): Promise<StartedServer> {
   if (config.heartbeatSchedulerEnabled) {
     const heartbeat = heartbeatService(db as any, { pluginWorkerManager });
     const routines = routineService(db as any, { pluginWorkerManager });
+    const alertEngine = createAlertEngine(db as any, {
+      marketClient: createDefaultMarketClient(),
+      cooldownMinutes: config.alertCooldownMinutes,
+    });
+    void alertEngine.tick(new Date())
+      .then((r) => { if (r.fired > 0) logger.info({ ...r }, "alert engine startup tick fired events"); })
+      .catch((err) => logger.error({ err }, "alert engine startup tick failed"));
   
     // Reap orphaned running runs at startup while in-memory execution state is empty,
     // then resume any persisted queued runs that were waiting on the previous process.
@@ -787,6 +796,10 @@ export async function startServer(): Promise<StartedServer> {
         .catch((err) => {
           logger.error({ err }, "routine scheduler tick failed");
         });
+
+      void alertEngine.tick(new Date())
+        .then((r) => { if (r.fired > 0) logger.info({ ...r }, "alert engine tick fired events"); })
+        .catch((err) => logger.error({ err }, "alert engine tick failed"));
   
       // Periodically reap orphaned runs (5-min staleness threshold) and make sure
       // persisted queued work is still being driven forward.
