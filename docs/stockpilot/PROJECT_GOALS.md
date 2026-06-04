@@ -49,9 +49,7 @@ A self-hoster can clone the repo, run `pnpm dev`, connect a portfolio (or import
 
 ---
 
-## Licensing note (open question — confirm before launch)
+## Licensing — RESOLVED: MIT
 
-- The **design spec** (`docs/superpowers/specs/2026-05-31-stockpilot-ai-design.md`) specifies **AGPL** (protects the hosted cloud version from competitors).
-- In conversation the owner mentioned **MIT**.
-
-These conflict. **Do not assume one — confirm with the owner before publishing license terms.** Tracked in the roadmap's open-questions list.
+- **License = MIT** (owner decision, 2026-06-03), superseding the AGPL suggestion in the original design spec.
+- The repo is MIT throughout: root `LICENSE` + every `package.json` `license` field. The original Paperclip copyright is retained in `LICENSE` (MIT requires preserving it); a StockPilot AI copyright line was added.

@@ -191,7 +191,7 @@ Build in this order; write each plan with `superpowers:writing-plans`, execute w
 3. ✅ **Bring-your-own-keys onboarding wizard** — DONE. `ui/src/lib/apiKeyProviders.ts` (provider metadata + `isConnected`) + `ui/src/components/ApiKeysWizard.tsx` (3-step dialog: AI key required → market-data key optional → done) opened from a "Connect API keys" section on `CompanySettings.tsx`. Composes existing `apiKeysApi`; key values never shown (password inputs, names-only list). Follow-ups: auto-launch on first login, "test key" validation.
 4. ⏭️ **Sample/mock subscription onboarding** — **SKIPPED for now** (owner, 2026-06-03). Revisit when ready to demo the paid flow without Stripe.
 5. ✅ **Per-company data-key resolution** — DONE. `server/src/services/market-key-resolver.ts` (pure, tested) reads a cloud company's `data.alpha_vantage`/`data.polygon` secrets (via `secrets.getByName` + `resolveSecretValue`), falling back to global config keys; self-host unchanged; tier gating intact. Wired into the market router in `app.ts` (TODO(plan5) removed).
-6. ⏳ **MIT license** application across the repo.
+6. ✅ **MIT license** — DONE. Repo already MIT (root `LICENSE` + all `package.json`); added a StockPilot AI copyright line (Paperclip's retained per MIT); reconciled the AGPL mentions in `PROJECT_GOALS.md` and the design spec to MIT.
 7. ⏳ **Finish `@paperclipai/*` → `@stockpilotai/*` rename.**
 8. ⏳ **Paperclip codebase deep-dive doc.**
 

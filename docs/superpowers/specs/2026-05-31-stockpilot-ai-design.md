@@ -26,7 +26,9 @@ Single monorepo forked from Paperclip. One environment variable — `STOCKPILOT_
 Same codebase, same GitHub repo, same open source license.
 
 ### License
-**AGPL** — anyone can use, self-host, and modify freely. If they run it as a hosted service they must open source their changes. Protects against competitors copying the cloud version.
+> **SUPERSEDED (2026-06-03): the owner chose MIT, not AGPL.** The repo is MIT. The original AGPL rationale below is kept for historical context only.
+
+~~**AGPL** — anyone can use, self-host, and modify freely. If they run it as a hosted service they must open source their changes. Protects against competitors copying the cloud version.~~
 
 ### Open Source + Cloud Model
 Mirrors the Cal.com / Supabase pattern:
