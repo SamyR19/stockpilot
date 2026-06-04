@@ -1,4 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
+import { ApiKeysWizard } from "../components/ApiKeysWizard";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES,
@@ -11,7 +12,7 @@ import { assetsApi } from "../api/assets";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
-import { Settings, CloudUpload, Download, Upload } from "lucide-react";
+import { Settings, CloudUpload, Download, Upload, KeyRound } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
 import {
   Field,
@@ -41,6 +42,7 @@ export function CompanySettings() {
   const [attachmentMaxMiB, setAttachmentMaxMiB] = useState(String(DEFAULT_COMPANY_ATTACHMENT_MAX_MIB));
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const [keysWizardOpen, setKeysWizardOpen] = useState(false);
 
   // Sync local state from selected company
   useEffect(() => {
@@ -399,6 +401,30 @@ export function CompanySettings() {
           </div>
         </div>
       </div>
+
+      {/* API Keys */}
+      <div className="space-y-4">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          API Keys
+        </div>
+        <div className="rounded-md border border-border px-4 py-4">
+          <p className="text-sm text-muted-foreground">
+            Connect your own AI and market-data API keys to power StockPilot features.
+          </p>
+          <div className="mt-3">
+            <Button size="sm" variant="outline" onClick={() => setKeysWizardOpen(true)}>
+              <KeyRound className="mr-1.5 h-3.5 w-3.5" />
+              Connect API keys
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <ApiKeysWizard
+        open={keysWizardOpen}
+        onOpenChange={setKeysWizardOpen}
+        companyId={selectedCompanyId!}
+      />
 
       {/* Danger Zone */}
       <div className="space-y-4">
