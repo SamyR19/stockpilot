@@ -1,13 +1,11 @@
 import {
   Inbox,
   CircleDot,
-  Target,
   LayoutDashboard,
   DollarSign,
   History,
   Search,
   SquarePen,
-  Network,
   Boxes,
   Repeat,
   GitBranch,
@@ -23,12 +21,12 @@ import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "@/lib/router";
 import { SidebarSection } from "./SidebarSection";
 import { SidebarNavItem } from "./SidebarNavItem";
-import { SidebarProjects } from "./SidebarProjects";
 import { SidebarAgents } from "./SidebarAgents";
 import { useDialogActions } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { heartbeatsApi } from "../api/heartbeats";
 import { instanceSettingsApi } from "../api/instanceSettings";
+import { billingApi } from "../api/billing";
 import { queryKeys } from "../lib/queryKeys";
 import { useInboxBadge } from "../hooks/useInboxBadge";
 import { Button } from "@/components/ui/button";
@@ -52,6 +50,12 @@ export function Sidebar() {
   });
   const liveRunCount = liveRuns?.length ?? 0;
   const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
+  const { data: billingStatus } = useQuery({
+    queryKey: queryKeys.billing.status(selectedCompanyId!),
+    queryFn: () => billingApi.status(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+  });
+  const isCloudMode = billingStatus?.isCloudMode ?? false;
 
   const pluginContext = {
     companyId: selectedCompanyId,
@@ -102,7 +106,6 @@ export function Sidebar() {
         <SidebarSection label="Work">
           <SidebarNavItem to="/issues" label="Research Tasks" icon={CircleDot} />
           <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
-          <SidebarNavItem to="/goals" label="Goals" icon={Target} />
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}
@@ -121,8 +124,6 @@ export function Sidebar() {
           />
         </SidebarSection>
 
-        <SidebarProjects />
-
         <SidebarAgents />
 
         <SidebarSection label="Finance">
@@ -131,13 +132,12 @@ export function Sidebar() {
           <SidebarNavItem to="/alerts" label="Alerts" icon={Bell} />
           <SidebarNavItem to="/market" label="Market" icon={BarChart2} />
           <SidebarNavItem to="/reports" label="Reports" icon={FileText} />
-          <SidebarNavItem to="/billing" label="Billing" icon={CreditCard} />
+          {isCloudMode && <SidebarNavItem to="/billing" label="Billing" icon={CreditCard} />}
         </SidebarSection>
 
-        <SidebarSection label="Workspace">
-          <SidebarNavItem to="/org" label="Org" icon={Network} />
-          <SidebarNavItem to="/skills" label="Skills" icon={Boxes} />
-          <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
+        <SidebarSection label="Manage">
+          <SidebarNavItem to="/skills" label="Analyst Roles" icon={Boxes} />
+          <SidebarNavItem to="/costs" label="Usage" icon={DollarSign} />
           <SidebarNavItem to="/activity" label="Activity" icon={History} />
           <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} />
         </SidebarSection>
