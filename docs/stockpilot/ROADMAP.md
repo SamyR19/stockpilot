@@ -40,7 +40,7 @@ Plans live in `docs/superpowers/plans/YYYY-MM-DD-plan-N-*.md`. Each plan is exec
 
 ## 2.5 Deployment — current state & runbook (Railway)  🔴 READ before any deploy/infra work
 
-**TL;DR (2026-06-03):** Cloud hosting moved **Vercel → Railway**. The **whole app (UI + Express API) runs as ONE Docker container** on Railway, talking to **Supabase** Postgres. The build is GREEN and the server boots. **The only step left to be "live" is creating the first admin (`bootstrap-ceo`).**
+**TL;DR (2026-06-03):** Cloud hosting moved **Vercel → Railway**. The **whole app (UI + Express API) runs as ONE Docker container** on Railway, talking to **Supabase** Postgres. ✅ **LIVE** — build green, server boots, first admin created and claimed. Public URL works. Remaining items below are cleanup + billing + features, not blockers to "is it up."
 
 ### Why Railway, not Vercel
 StockPilot's server is a heavy, always-on Express monolith (`embedded-postgres`, `sharp`, `sqlite3`, `jsdom`, plugin system, agent adapters). Vercel **serverless** functions can't host it — bundling `api/index.ts` (which imports the whole `server/app.ts`) blew past the 250 MB lambda limit and hung. Railway runs the container **24/7**, which is the right fit and matches "one Docker image → selfhost *or* cloud (via `STOCKPILOT_MODE`)". **Vercel is retired.** `vercel.json` + `api/index.ts` remain in-repo but unused (safe to delete later). Mental model: **Supabase = database, Railway = always-on compute, the domain = front door.**
@@ -78,13 +78,13 @@ StockPilot's server is a heavy, always-on Express monolith (`embedded-postgres`,
 
 **Vercel (historical, for reference):** lockfile missing the `api/` importer (`ERR_PNPM_OUTDATED_LOCKFILE`); `plugin-sdk` postinstall `EEXIST` (made idempotent in `scripts/link-plugin-dev-sdk.mjs`); server `tsc` couldn't resolve `@paperclipai/plugin-sdk` on a clean checkout; output-dir / Root-Directory mismatch; invalid `functions.runtime: "@vercel/node@5"`.
 
-### Remaining to be fully live (current task list)
-1. **Create the first admin** — `railway ssh` → write the minimal `config.json` above → `pnpm paperclipai auth bootstrap-ceo` → open the printed `https://…/invite/<token>` URL → claim owner. *(This is exactly where we were when this doc was written.)*
-2. **Verify end-to-end** on the public URL: login, UI loads, DB reads/writes work.
-3. **Cleanup:** rename service `@paperclipai/db` → `stockpilot`; confirm watch paths cleared; optionally remove unused `vercel.json` + `api/`.
-4. **(Better fix)** bake the `config.json` generation into `scripts/docker-entrypoint.sh` from env vars so `bootstrap-ceo` "just works" without manual ssh.
+### Deployment task list
+1. ✅ **First admin created** — claimed via `bootstrap-ceo` invite (2026-06-03).
+2. **Verify end-to-end** on the public URL: login, UI loads, DB reads/writes, market data. *(Largely working — admin claim succeeded.)*
+3. **Cleanup:** rename service `@paperclipai/db` → `stockpilot`; confirm watch paths cleared; remove unused `vercel.json` + `api/`.
+4. **(Better fix)** bake `config.json` generation into `scripts/docker-entrypoint.sh` from env vars so `bootstrap-ceo` "just works" without manual ssh on future instances.
 5. **Billing:** add Stripe env vars + webhook (→ `/api/billing/...`) when ready to charge; until then cloud users sign up + bring their own keys.
-6. **Plan:** upgrade Railway to Hobby for sustained uptime.
+6. **Plan:** upgrade Railway to **Hobby (~$5/mo)** for sustained 24/7 (trial credits run out).
 
 ### Local-dev note
 Owner's Mac disk was ~500 MB free during this work (96% full) — heavy local builds/Docker fail. `pnpm store prune` (~2 GB) helps; otherwise clear Downloads / System Settings → Storage.
