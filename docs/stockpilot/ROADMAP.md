@@ -177,7 +177,7 @@ We don't delete Paperclip features, but some make less sense for a single-user f
 
 **Resolved (owner, 2026-06-03):**
 - ✅ **License = MIT** (not AGPL). Apply across repo (LICENSE file, package.json `license` fields, headers as needed).
-- ✅ **Finish renaming** `@paperclipai/*` → `@stockpilotai/*` everywhere (packages, imports, scopes). Repo `SamyR19/stockpilot`, product "StockPilot AI".
+- ⏸️ **Package rename `@paperclipai/*` → `@stockpilotai/*` DEFERRED** (owner, 2026-06-03): the owner may still change the product name, and a rename is huge/risky (967 files, 2,296 occurrences, plus Dockerfile + release scripts on a live deployment). Revisit once the final name is locked. New StockPilot-specific packages already use `@stockpilotai/*` (market-data, feature-flags).
 
 **Still open:**
 - **Which Paperclip pages to hide** for the finance product (Org chart, Projects, Approvals, Execution Workspaces, etc.)? — needs owner pass.
@@ -192,7 +192,7 @@ Build in this order; write each plan with `superpowers:writing-plans`, execute w
 4. ⏭️ **Sample/mock subscription onboarding** — **SKIPPED for now** (owner, 2026-06-03). Revisit when ready to demo the paid flow without Stripe.
 5. ✅ **Per-company data-key resolution** — DONE. `server/src/services/market-key-resolver.ts` (pure, tested) reads a cloud company's `data.alpha_vantage`/`data.polygon` secrets (via `secrets.getByName` + `resolveSecretValue`), falling back to global config keys; self-host unchanged; tier gating intact. Wired into the market router in `app.ts` (TODO(plan5) removed).
 6. ✅ **MIT license** — DONE. Repo already MIT (root `LICENSE` + all `package.json`); added a StockPilot AI copyright line (Paperclip's retained per MIT); reconciled the AGPL mentions in `PROJECT_GOALS.md` and the design spec to MIT.
-7. ⏳ **Finish `@paperclipai/*` → `@stockpilotai/*` rename.**
+7. ⏸️ **Finish `@paperclipai/*` → `@stockpilotai/*` rename** — **DEFERRED** (owner, 2026-06-03; final product name not yet locked + high risk on the live deployment). See §7 decisions.
 8. ⏳ **Paperclip codebase deep-dive doc.**
 
 ---
