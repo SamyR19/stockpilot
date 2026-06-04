@@ -179,8 +179,13 @@ We don't delete Paperclip features, but some make less sense for a single-user f
 - ✅ **License = MIT** (not AGPL). Apply across repo (LICENSE file, package.json `license` fields, headers as needed).
 - ⏸️ **Package rename `@paperclipai/*` → `@stockpilotai/*` DEFERRED** (owner, 2026-06-03): the owner may still change the product name, and a rename is huge/risky (967 files, 2,296 occurrences, plus Dockerfile + release scripts on a live deployment). Revisit once the final name is locked. New StockPilot-specific packages already use `@stockpilotai/*` (market-data, feature-flags).
 
-**Still open:**
-- **Which Paperclip pages to hide** for the finance product (Org chart, Projects, Approvals, Execution Workspaces, etc.)? — needs owner pass.
+**Resolved (owner, 2026-06-03) — finance UI simplification done:**
+- Sidebar simplified for finance: **hid Org, Goals, Projects** from nav; renamed section "Workspace"→**"Manage"**, "Costs"→**"Usage"**, "Skills"→**"Analyst Roles"**, agents header→**"Your Analysts"**; **Billing gated to cloud mode**. (`ui/src/components/Sidebar.tsx`; pages/routes still exist, just removed from nav — reversible.)
+- **Get Started welcome tour** added (`ui/src/components/GetStartedDialog.tsx` + `context/GetStartedContext.tsx`): 7-step finance-framed tour, auto-shows on first visit (localStorage `stockpilot.getStarted.dismissed`), re-launchable from the account menu and the onboarding wizard.
+- **Marketing landing page** (`stockpilot-landing.html`): replaced the `⌘` glyph next to Docs with a real GitHub mark linked to `github.com/SamyR19/stockpilot`.
+
+**Known UX gap to address next — agent creation:**
+- Agent **roles** are still Paperclip's startup roles (CEO/CTO/Engineer/…); the finance **analyst personas** (equity-analyst, news-sentinel, portfolio-manager, macro-researcher, quant-analyst, earnings-scout) live as **skill files** you install + attach. There is no "hire an analyst" path. **Recommended next feature:** a finance-role agent creation flow (preset "analyst" roles or a one-click hire that creates an agent pre-wired with the matching skill) — mirrors the routine-templates pattern.
 
 ## 7b. Active work queue (owner-requested 2026-06-03, agent-driven, one plan at a time)
 
