@@ -4,7 +4,7 @@
 >
 > Companion docs: [`PROJECT_GOALS.md`](./PROJECT_GOALS.md) (the why) · [`PAPERCLIP_REFERENCE.md`](./PAPERCLIP_REFERENCE.md) (what the forked code does) · design spec: `docs/superpowers/specs/2026-05-31-stockpilot-ai-design.md` · plans: `docs/superpowers/plans/`.
 
-**Last updated:** 2026-06-02 (after Plan 6 Task 8 — cloud deployment env vars documented)
+**Last updated:** 2026-06-03 (cloud hosting migrated Vercel → **Railway**; app builds & boots; pending first-admin bootstrap — see §2.5)
 
 ---
 
@@ -23,17 +23,71 @@ Open-source OS for running AI agents as your personal Wall Street research team.
 | **Plan 3** | Broker connections (Schwab OAuth, CSV import) + `/api/broker/*` | ✅ Done |
 | **Plan 4** | Finance UI pages: Portfolio, Watchlist, Alerts, Market + sidebar nav | ✅ Done |
 | **Plan 5** | **Stripe billing + subscription tier enforcement** | ✅ Done (`docs/superpowers/plans/2026-06-01-plan-5-billing-tiers.md`) |
-| **Plan 6** | Cloud deployment (Vercel + Supabase) | ⏳ **In progress — code complete; awaiting Supabase + Vercel credentials to deploy** (`docs/superpowers/plans/2026-06-01-plan-6-cloud-deployment.md`) |
+| **Plan 6** | Cloud deployment | ⏳ **Live build on Railway; pending first-admin bootstrap** — hosting moved off Vercel (see §2.5) |
 
 Plans live in `docs/superpowers/plans/YYYY-MM-DD-plan-N-*.md`. Each plan is executed with the `superpowers:subagent-driven-development` skill (owner's standing preference — never ask which execution approach).
 
-### Beyond Plan 6 (from the design spec, not yet scheduled into a plan)
-- **Reports page** — library of agent-generated research reports (table `research_reports` already exists; no UI yet).
-- **Market Routine Builder** — visual builder for recurring agent jobs.
-- **Alert evaluation engine** — nothing currently turns `alert_rules` into `alert_events`; the Alerts UI exists but alerts don't *fire* yet. (Strong candidate for a near-term plan.)
-- **Dashboard rework** — financial overview (market status, portfolio snapshot, agent activity feed).
-- **Language changes** — "Heartbeats"→"Routines" (partly done), "Issues"→"Research Tasks", "Company"→"Workspace".
-- **MCP server layer** — explicitly future / post-users.
+### Beyond Plan 6 (from the design spec)
+- **Reports page** — ✅ **Done** (research-reports CRUD API + UI + nav).
+- **Dashboard rework** — ✅ **Done** (financial overview: market indices, portfolio snapshot, watchlist movers).
+- **Language changes** — ✅ **Done** ("Heartbeats"→"Routines", "Issues"→"Research Tasks", "Company"→"Workspace").
+- **Market Routine Builder** — ⏳ **Not done** (was mid-investigation when the deploy work took over). Visual builder for recurring agent jobs (routines + cron triggers).
+- **Paperclip codebase deep-dive doc** — ⏳ **Not started** (owner requested a thorough doc of the forked Paperclip code).
+- **Alert evaluation engine** — ⏳ Not built; nothing turns `alert_rules` into `alert_events` yet. Strong near-term candidate.
+- **MCP server layer** — future / post-users.
+
+---
+
+## 2.5 Deployment — current state & runbook (Railway)  🔴 READ before any deploy/infra work
+
+**TL;DR (2026-06-03):** Cloud hosting moved **Vercel → Railway**. The **whole app (UI + Express API) runs as ONE Docker container** on Railway, talking to **Supabase** Postgres. The build is GREEN and the server boots. **The only step left to be "live" is creating the first admin (`bootstrap-ceo`).**
+
+### Why Railway, not Vercel
+StockPilot's server is a heavy, always-on Express monolith (`embedded-postgres`, `sharp`, `sqlite3`, `jsdom`, plugin system, agent adapters). Vercel **serverless** functions can't host it — bundling `api/index.ts` (which imports the whole `server/app.ts`) blew past the 250 MB lambda limit and hung. Railway runs the container **24/7**, which is the right fit and matches "one Docker image → selfhost *or* cloud (via `STOCKPILOT_MODE`)". **Vercel is retired.** `vercel.json` + `api/index.ts` remain in-repo but unused (safe to delete later). Mental model: **Supabase = database, Railway = always-on compute, the domain = front door.**
+
+### How it's wired
+- **Build:** root **`Dockerfile`** (multi-stage) builds `ui` → `plugin-sdk` → `@paperclipai/server...` (full dep graph), then runs `node server/dist/index.js`. The server serves the built UI from `../../ui/dist` (that path exists inside the image since the whole repo is copied).
+- **DB:** Supabase Postgres via `DATABASE_URL`. `embedded-postgres` is only the self-host fallback (dynamic `import()`) — **never loaded when `DATABASE_URL` is set.**
+- **Config split (important):** the **server is ENV-driven** (`loadConfig` reads env vars). The **CLI (`paperclipai ...`) is FILE-driven** (`readConfig` reads `$PAPERCLIP_CONFIG` → `config.json`). This mismatch is why `bootstrap-ceo` needs a config file even though the server doesn't (see gotchas).
+
+### Railway facts
+- Project **`spectacular-trust`** · team "Samy Rabah's Projects" (`team_n1nB3tBVgtNkSXrghnNzHKzD`) · project id `5225984d-70c7-4e5b-a3e7-223e7a595bc6`.
+- Service is currently mis-named **`@paperclipai/db`** (Railway monorepo auto-detect artifact — **rename to `stockpilot`**). It builds the root Dockerfile (`builder: DOCKERFILE`, root dir = repo root).
+- **Public URL:** `https://paperclipaidb-production.up.railway.app`
+- Deployment Protection: OFF. Plan: **free trial** → will need **Hobby (~$5/mo)** for sustained 24/7.
+- Railway **CLI is authenticated locally** (`railway whoami` = Samy Rabah). `railway ssh` into the running container works. `railway logs --build` only reliably streams *active* builds; failed-build logs are easiest in the dashboard. Owner prefers I avoid driving the Railway CLI for deploys unless asked — guide via dashboard.
+
+### Required Railway env vars (service → Variables)
+`DATABASE_URL` (Supabase URI, `postgresql://postgres:<pwd>@db.<ref>.supabase.co:5432/postgres`) · `BETTER_AUTH_SECRET` · `PAPERCLIP_DEPLOYMENT_MODE=authenticated` · `PAPERCLIP_DEPLOYMENT_EXPOSURE=public` · `PAPERCLIP_AUTH_BASE_URL_MODE=explicit` · `PAPERCLIP_AUTH_PUBLIC_BASE_URL=https://<domain>` · `PAPERCLIP_ALLOWED_HOSTNAMES=<domain>` · `PAPERCLIP_MIGRATION_AUTO_APPLY=true` · `HOST=0.0.0.0` · `STOCKPILOT_MODE=cloud`. **Do NOT set `PORT`** (Railway injects it). Stripe vars optional until billing goes live.
+
+### Hard-won gotchas — do NOT re-learn these
+**Railway (current):**
+- **Monorepo auto-detect spawns one junk service per package** (`db`, `market-data`, `mcp-server`, `skills-catalog`, `feature-flags`). Keep ONE, delete the rest.
+- **Watch Paths** on the auto-created service were scoped to `/packages/db/**` → every build **SKIPPED** ("no changes detected in watch paths"). **Clear watch paths** or only db-package changes deploy.
+- **"Wait for CI"** ON blocks deploys forever (repo has no GitHub CI). **Turn it OFF.**
+- **`VOLUME` is unsupported** by Railway's builder ("docker VOLUME … is not supported, use Railway Volumes") — removed from Dockerfile (commit `545c8617`). For persistent `/paperclip`, attach a Railway Volume.
+- **"Redeploy"** re-runs the OLD snapshot/commit — it does NOT pick up newer `main` commits. Push a new commit (with watch-path cleared + CI-wait off) to build latest.
+- `# syntax=` directive + `COPY --parents` (BuildKit features) ultimately built fine on Railway; watch them if builds break.
+- **`bootstrap-ceo` needs a config FILE** at `$PAPERCLIP_CONFIG` (=`/paperclip/instances/default/config.json`) whose `server.deploymentMode` = `authenticated`; it reads `DATABASE_URL` + base URL from env. In the env-driven container that file doesn't exist → *"No config found, run onboard first."* **Fix:** `railway ssh` into the container, write a minimal valid `config.json`, then `pnpm paperclipai auth bootstrap-ceo`. Minimal schema:
+  ```json
+  { "$meta": {"version":1,"updatedAt":"2026-06-03T00:00:00.000Z","source":"configure"},
+    "database": {}, "logging": {"mode":"file"},
+    "server": {"deploymentMode":"authenticated","exposure":"private"} }
+  ```
+  (exposure `private` in the *file* avoids the public-auth cross-field validation; the real running server stays `public` via env. DB URL + invite base URL come from env.)
+
+**Vercel (historical, for reference):** lockfile missing the `api/` importer (`ERR_PNPM_OUTDATED_LOCKFILE`); `plugin-sdk` postinstall `EEXIST` (made idempotent in `scripts/link-plugin-dev-sdk.mjs`); server `tsc` couldn't resolve `@paperclipai/plugin-sdk` on a clean checkout; output-dir / Root-Directory mismatch; invalid `functions.runtime: "@vercel/node@5"`.
+
+### Remaining to be fully live (current task list)
+1. **Create the first admin** — `railway ssh` → write the minimal `config.json` above → `pnpm paperclipai auth bootstrap-ceo` → open the printed `https://…/invite/<token>` URL → claim owner. *(This is exactly where we were when this doc was written.)*
+2. **Verify end-to-end** on the public URL: login, UI loads, DB reads/writes work.
+3. **Cleanup:** rename service `@paperclipai/db` → `stockpilot`; confirm watch paths cleared; optionally remove unused `vercel.json` + `api/`.
+4. **(Better fix)** bake the `config.json` generation into `scripts/docker-entrypoint.sh` from env vars so `bootstrap-ceo` "just works" without manual ssh.
+5. **Billing:** add Stripe env vars + webhook (→ `/api/billing/...`) when ready to charge; until then cloud users sign up + bring their own keys.
+6. **Plan:** upgrade Railway to Hobby for sustained uptime.
+
+### Local-dev note
+Owner's Mac disk was ~500 MB free during this work (96% full) — heavy local builds/Docker fail. `pnpm store prune` (~2 GB) helps; otherwise clear Downloads / System Settings → Storage.
 
 ---
 
