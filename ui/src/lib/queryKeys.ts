@@ -225,6 +225,7 @@ export const queryKeys = {
   },
   alerts: {
     list: (companyId: string) => ["alerts", companyId] as const,
+    events: (companyId: string) => ["alerts", companyId, "events"] as const,
   },
   billing: {
     status: (companyId: string) => ["billing", "status", companyId] as const,

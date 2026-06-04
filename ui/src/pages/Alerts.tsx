@@ -6,6 +6,7 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext"
 import { queryKeys } from "../lib/queryKeys"
 import { alertsApi, CONDITION_LABELS } from "../api/alerts"
 import type { AlertRule, AlertConditionType } from "../api/alerts"
+import { api } from "../api/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -58,6 +59,30 @@ export function Alerts() {
     queryKey: queryKeys.alerts.list(selectedCompanyId!),
     queryFn: () => alertsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
+  })
+
+  interface AlertEvent {
+    id: string
+    ticker: string
+    conditionType: AlertConditionType
+    value: number | string | null
+    triggeredAt: string
+    notified: boolean
+  }
+
+  const EVENT_LABELS: Record<string, string> = {
+    price_above: "Price above",
+    price_below: "Price below",
+    percent_change: "% change",
+    volume_spike: "Volume spike",
+    earnings_date: "Earnings date",
+  }
+
+  const { data: events, isLoading: eventsLoading } = useQuery({
+    queryKey: queryKeys.alerts.events(selectedCompanyId!),
+    queryFn: () => api.get<AlertEvent[]>(`/alerts/${encodeURIComponent(selectedCompanyId!)}/events`),
+    enabled: !!selectedCompanyId,
+    staleTime: 30_000,
   })
 
   const createMutation = useMutation({
@@ -162,6 +187,34 @@ export function Alerts() {
           ))}
         </div>
       )}
+
+      <div className="rounded-lg border border-border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
+          <h2 className="text-sm font-medium">Triggered alerts</h2>
+        </div>
+        {eventsLoading ? (
+          <div className="px-4 py-6 flex justify-center">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-foreground" />
+          </div>
+        ) : (events?.length ?? 0) === 0 ? (
+          <div className="px-4 py-6">
+            <EmptyState icon={Bell} message="No alerts have triggered yet." />
+          </div>
+        ) : (
+          events!.map((event) => (
+            <div key={event.id} className="flex items-center justify-between px-4 py-3 hover:bg-accent/30 transition-colors border-b border-border last:border-0">
+              <div className="flex items-center gap-3">
+                <span className="font-mono font-semibold text-sm w-16">{event.ticker}</span>
+                <span className="text-sm text-muted-foreground">
+                  {EVENT_LABELS[event.conditionType] ?? event.conditionType}
+                  {event.value != null ? ` ${event.value}` : ""}
+                </span>
+              </div>
+              <span className="text-xs text-muted-foreground">{new Date(event.triggeredAt).toLocaleString()}</span>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   )
 }
