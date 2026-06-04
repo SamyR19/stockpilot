@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { GetStartedDialog } from "./GetStartedDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AdapterEnvironmentTestResult } from "@paperclipai/shared";
 import { useLocation, useNavigate, useParams } from "@/lib/router";
@@ -99,6 +100,7 @@ export function OnboardingWizard() {
   const existingCompanyId = effectiveOnboardingOptions.companyId;
 
   const [step, setStep] = useState<Step>(initialStep);
+  const [tourOpen, setTourOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modelOpen, setModelOpen] = useState(false);
@@ -596,6 +598,7 @@ export function OnboardingWizard() {
   if (!effectiveOnboardingOpen) return null;
 
   return (
+    <>
     <Dialog
       open={effectiveOnboardingOpen}
       onOpenChange={(open) => {
@@ -618,6 +621,15 @@ export function OnboardingWizard() {
           >
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>
+          </button>
+
+          {/* Product tour shortcut */}
+          <button
+            type="button"
+            onClick={() => setTourOpen(true)}
+            className="absolute top-4 right-4 z-10 text-xs text-muted-foreground/60 hover:text-foreground transition-colors underline underline-offset-2"
+          >
+            Take the product tour
           </button>
 
           {/* Left half — form */}
@@ -1269,6 +1281,8 @@ export function OnboardingWizard() {
         </div>
       </DialogPortal>
     </Dialog>
+    <GetStartedDialog open={tourOpen} onOpenChange={setTourOpen} />
+    </>
   );
 }
 

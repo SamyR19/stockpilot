@@ -9,6 +9,7 @@ import {
   UserRound,
   Sun,
   UserRoundPen,
+  Sparkles,
 } from "lucide-react";
 import type { DeploymentMode } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
@@ -29,6 +30,7 @@ interface SidebarAccountMenuProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   version?: string | null;
+  onOpenGetStarted?: () => void;
 }
 
 interface MenuActionProps {
@@ -107,6 +109,7 @@ export function SidebarAccountMenu({
   open: controlledOpen,
   onOpenChange,
   version,
+  onOpenGetStarted,
 }: SidebarAccountMenuProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -199,6 +202,15 @@ export function SidebarAccountMenu({
                 icon={UserRoundPen}
                 href={PROFILE_SETTINGS_PATH}
                 onClick={closeNavigationChrome}
+              />
+              <MenuAction
+                label="Get Started"
+                description="Take a quick tour of StockPilot AI's main features."
+                icon={Sparkles}
+                onClick={() => {
+                  closeNavigationChrome();
+                  onOpenGetStarted?.();
+                }}
               />
               <MenuAction
                 label="Instance settings"

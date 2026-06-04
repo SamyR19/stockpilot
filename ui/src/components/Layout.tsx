@@ -19,6 +19,8 @@ import { WorktreeBanner } from "./WorktreeBanner";
 import { DevRestartBanner } from "./DevRestartBanner";
 import { ResizableSidebarPane } from "./ResizableSidebarPane";
 import { SidebarAccountMenu } from "./SidebarAccountMenu";
+import { GetStartedDialog, GET_STARTED_DISMISSED_KEY } from "./GetStartedDialog";
+import { GetStartedProvider, useGetStarted } from "../context/GetStartedContext";
 import { useDialogActions } from "../context/DialogContext";
 import { GeneralSettingsProvider } from "../context/GeneralSettingsContext";
 import { usePanel } from "../context/PanelContext";
@@ -63,6 +65,15 @@ function readRememberedInstanceSettingsPath(): string {
 }
 
 export function Layout() {
+  return (
+    <GetStartedProvider>
+      <LayoutInner />
+    </GetStartedProvider>
+  );
+}
+
+function LayoutInner() {
+  const { open: getStartedOpen, setOpen: setGetStartedOpen } = useGetStarted();
   const { sidebarOpen, setSidebarOpen, toggleSidebar, isMobile } = useSidebar();
   const { openNewIssue, openOnboarding } = useDialogActions();
   const { togglePanelVisible } = usePanel();
@@ -152,6 +163,18 @@ export function Layout() {
       openOnboarding();
     }
   }, [companies, companiesLoading, openOnboarding, health?.deploymentMode]);
+
+  // Auto-show Get Started tour on first visit
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(GET_STARTED_DISMISSED_KEY) !== "1") {
+        setGetStartedOpen(true);
+      }
+    } catch {
+      // Ignore storage failures.
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!companyPrefix || companiesLoading || companies.length === 0) return;
@@ -395,6 +418,7 @@ export function Layout() {
               deploymentMode={health?.deploymentMode}
               instanceSettingsTarget={instanceSettingsTarget}
               version={health?.version}
+              onOpenGetStarted={() => setGetStartedOpen(true)}
             />
           </div>
         ) : (
@@ -414,6 +438,7 @@ export function Layout() {
               deploymentMode={health?.deploymentMode}
               instanceSettingsTarget={instanceSettingsTarget}
               version={health?.version}
+              onOpenGetStarted={() => setGetStartedOpen(true)}
             />
           </div>
         )}
@@ -461,6 +486,7 @@ export function Layout() {
       <NewGoalDialog />
       <NewAgentDialog />
       <KeyboardShortcutsCheatsheet open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <GetStartedDialog open={getStartedOpen} onOpenChange={setGetStartedOpen} />
       <ToastViewport />
       </div>
     </GeneralSettingsProvider>
