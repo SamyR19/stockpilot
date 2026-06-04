@@ -105,8 +105,8 @@ export function NewAgent() {
 
   useEffect(() => {
     if (isFirstAgent) {
-      if (!name) setName("CEO");
-      if (!title) setTitle("CEO");
+      if (!name) setName("Research Lead");
+      if (!title) setTitle("Research Lead");
     }
   }, [isFirstAgent]); // eslint-disable-line react-hooks/exhaustive-deps
 
