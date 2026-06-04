@@ -103,6 +103,7 @@ export interface Config {
   feedbackExportBackendToken: string | undefined;
   heartbeatSchedulerEnabled: boolean;
   heartbeatSchedulerIntervalMs: number;
+  alertCooldownMinutes: number;
   companyDeletionEnabled: boolean;
   telemetryEnabled: boolean;
   stockpilotMode: 'selfhost' | 'cloud';
@@ -361,6 +362,7 @@ export function loadConfig(): Config {
     feedbackExportBackendToken,
     heartbeatSchedulerEnabled: process.env.HEARTBEAT_SCHEDULER_ENABLED !== "false",
     heartbeatSchedulerIntervalMs: Math.max(10000, Number(process.env.HEARTBEAT_SCHEDULER_INTERVAL_MS) || 30000),
+    alertCooldownMinutes: Number(process.env.PAPERCLIP_ALERT_COOLDOWN_MINUTES) || 360,
     companyDeletionEnabled,
     telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
     stockpilotMode: STOCKPILOT_MODE,
