@@ -16,6 +16,7 @@ Design spec: `docs/superpowers/specs/2026-05-31-stockpilot-ai-design.md`. Plans:
 
 - **Plans:** write with `superpowers:writing-plans`; execute with `superpowers:subagent-driven-development` (owner always wants subagent-driven — don't ask which approach).
 - **Never** add a feature that could place, modify, or cancel a trade. StockPilot is strictly read-only.
+- **Security — always keep RLS on.** All `public` tables run RLS **deny-all** (migration `0097`) so the managed host's auto REST API is locked; the app is unaffected (connects as a BYPASSRLS owner; auth is enforced in the Express layer via better-auth + `assertAuthenticated`/`assertCompanyAccess`). A DB **event trigger auto-enables RLS on every new table** — do not disable it. After DDL/schema changes, re-check the Supabase **security advisor** and keep it clean.
 - **New board UI page?** Add its route root to `BOARD_ROUTE_ROOTS` in `ui/src/lib/company-routes.ts` (company-prefixed routing).
 - **Changed a linked workspace package** (e.g. `packages/market-data`)? Restart the server — tsx only watches `server/src`.
 - **Commits:** author `Samy Rabah <samyrabah@icloud.com>`; add `Co-Authored-By: Claude ...`. Push to `main`.
