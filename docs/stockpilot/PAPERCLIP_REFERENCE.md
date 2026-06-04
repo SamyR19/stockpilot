@@ -1,6 +1,6 @@
 # Paperclip Reference — What the Forked Code Does
 
-> **What this file is:** A map of the **original Paperclip** codebase we forked, module by module, so we know what each part does and can decide what to **keep, hide, or remove** for the StockPilot finance product. Paperclip is an AI-agent *company control plane* (run a company of AI employees). StockPilot reuses its agent/heartbeat/task engine and layers finance on top.
+> **What this file is:** A map of the **original Paperclip** codebase we forked, module by module, so we know what each part does and can decide what to **keep, hide, or remove** for the StockPilot finance product. For the mechanics and architecture of how the platform actually works, see [`PAPERCLIP_DEEP_DIVE.md`](./PAPERCLIP_DEEP_DIVE.md). Paperclip is an AI-agent *company control plane* (run a company of AI employees). StockPilot reuses its agent/heartbeat/task engine and layers finance on top.
 >
 > **Rule:** Nothing gets removed without explicit owner sign-off (see [`PROJECT_GOALS.md`](./PROJECT_GOALS.md) principle #2). Use the `Disposition` column as a *recommendation to discuss*, not a license to delete.
 >
