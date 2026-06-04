@@ -16,6 +16,7 @@ export const alertRules = pgTable(
     threshold: text("threshold"),
     agentId: uuid("agent_id").references(() => agents.id, { onDelete: "set null" }),
     active: boolean("active").notNull().default(true),
+    lastTriggeredAt: timestamp("last_triggered_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
