@@ -116,7 +116,7 @@ Owner's Mac disk was ~500 MB free during this work (96% full) — heavy local bu
 - **Plan 6 pending**: Supabase project setup + Vercel env vars configured + first deploy verified (Tasks 4, 5, 7 require Supabase/Vercel credentials — see `docs/superpowers/plans/2026-06-01-plan-6-cloud-deployment.md`).
 - Vercel Cron for automated heartbeat scheduling (deferred to its own plan).
 - Bring-your-own-keys onboarding **wizard** (the key-management API exists; a guided multi-step UI does not).
-- Per-company **data-key value** resolution into the market client (the keys are stored; market provider selection currently reads global config keys — see `TODO(plan5)` in `server/src/app.ts`).
+- ~~Per-company data-key value resolution into the market client~~ ✅ done (queue item #5).
 - Reports page, Routine Builder, alert evaluation engine, dashboard rework, remaining language changes.
 
 ### Plan 5 deferred follow-ups (tracked, non-blocking for self-host)
@@ -190,7 +190,7 @@ Build in this order; write each plan with `superpowers:writing-plans`, execute w
 2. ✅ **Market Routine Builder** — DONE as **finance routine templates** (owner chose option A). The general routine builder already existed; added a finance preset catalog (`ui/src/lib/routineTemplates.ts`: daily watchlist briefing, weekly portfolio review, earnings watch) + a "New from template" dialog on `Routines.tsx` that composes existing `routinesApi.create` + `createTrigger`. No backend changes. Follow-ups: in-dialog cron editing, auto-create agent if none, server-side custom templates.
 3. ✅ **Bring-your-own-keys onboarding wizard** — DONE. `ui/src/lib/apiKeyProviders.ts` (provider metadata + `isConnected`) + `ui/src/components/ApiKeysWizard.tsx` (3-step dialog: AI key required → market-data key optional → done) opened from a "Connect API keys" section on `CompanySettings.tsx`. Composes existing `apiKeysApi`; key values never shown (password inputs, names-only list). Follow-ups: auto-launch on first login, "test key" validation.
 4. ⏭️ **Sample/mock subscription onboarding** — **SKIPPED for now** (owner, 2026-06-03). Revisit when ready to demo the paid flow without Stripe.
-5. ⏳ **Per-company data-key resolution** into the market client (the `TODO(plan5)` in `server/src/app.ts`).
+5. ✅ **Per-company data-key resolution** — DONE. `server/src/services/market-key-resolver.ts` (pure, tested) reads a cloud company's `data.alpha_vantage`/`data.polygon` secrets (via `secrets.getByName` + `resolveSecretValue`), falling back to global config keys; self-host unchanged; tier gating intact. Wired into the market router in `app.ts` (TODO(plan5) removed).
 6. ⏳ **MIT license** application across the repo.
 7. ⏳ **Finish `@paperclipai/*` → `@stockpilotai/*` rename.**
 8. ⏳ **Paperclip codebase deep-dive doc.**
