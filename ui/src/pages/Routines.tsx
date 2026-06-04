@@ -30,6 +30,7 @@ import {
   RoutineRunVariablesDialog,
   type RoutineRunDialogSubmitData,
 } from "../components/RoutineRunVariablesDialog";
+import { NewRoutineFromTemplateDialog } from "../components/NewRoutineFromTemplateDialog";
 import { RoutineVariablesEditor, RoutineVariablesHint } from "../components/RoutineVariablesEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -214,6 +215,7 @@ export function Routines() {
   const [statusMutationRoutineId, setStatusMutationRoutineId] = useState<string | null>(null);
   const [runDialogRoutine, setRunDialogRoutine] = useState<RoutineListItem | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const activeTab: RoutinesTab = searchParams.get("tab") === "runs" ? "runs" : "routines";
   const [draft, setDraft] = useState<{
@@ -497,10 +499,16 @@ export function Routines() {
             Recurring work definitions that materialize into auditable execution issues.
           </p>
         </div>
-        <Button onClick={() => setComposerOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create routine
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setTemplateDialogOpen(true)}>
+            <Layers className="mr-2 h-4 w-4" />
+            New from template
+          </Button>
+          <Button onClick={() => setComposerOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create routine
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -930,6 +938,17 @@ export function Routines() {
           )}
         </div>
       ) : null}
+
+      <NewRoutineFromTemplateDialog
+        open={templateDialogOpen}
+        onOpenChange={setTemplateDialogOpen}
+        companyId={selectedCompanyId!}
+        agents={agents ?? []}
+        onCreated={(routineId) => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) });
+          navigate(`/routines/${routineId}?tab=triggers`);
+        }}
+      />
 
       <RoutineRunVariablesDialog
         open={runDialogRoutine !== null}
