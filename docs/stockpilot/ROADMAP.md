@@ -193,7 +193,7 @@ Build in this order; write each plan with `superpowers:writing-plans`, execute w
 5. ✅ **Per-company data-key resolution** — DONE. `server/src/services/market-key-resolver.ts` (pure, tested) reads a cloud company's `data.alpha_vantage`/`data.polygon` secrets (via `secrets.getByName` + `resolveSecretValue`), falling back to global config keys; self-host unchanged; tier gating intact. Wired into the market router in `app.ts` (TODO(plan5) removed).
 6. ✅ **MIT license** — DONE. Repo already MIT (root `LICENSE` + all `package.json`); added a StockPilot AI copyright line (Paperclip's retained per MIT); reconciled the AGPL mentions in `PROJECT_GOALS.md` and the design spec to MIT.
 7. ⏸️ **Finish `@paperclipai/*` → `@stockpilotai/*` rename** — **DEFERRED** (owner, 2026-06-03; final product name not yet locked + high risk on the live deployment). See §7 decisions.
-8. ⏳ **Paperclip codebase deep-dive doc.**
+8. ✅ **Paperclip codebase deep-dive doc** — DONE. `docs/stockpilot/PAPERCLIP_DEEP_DIVE.md` (411 lines, 12 sections: request lifecycle, config/modes, data model, run engine, plugins, adapters, auth/secrets, realtime, frontend, build/test, StockPilot additions, "where do I change X?" map). Complements `PAPERCLIP_REFERENCE.md`.
 
 ---
 
