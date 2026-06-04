@@ -186,7 +186,7 @@ We don't delete Paperclip features, but some make less sense for a single-user f
 
 Build in this order; write each plan with `superpowers:writing-plans`, execute with `superpowers:subagent-driven-development`. Pause for any owner action (infra/keys/decisions).
 
-1. ⏳ **Alert evaluation engine** — `alert_rules` → `alert_events` actually fire (scheduler-driven).
+1. ✅ **Alert evaluation engine** — DONE. Pure `evaluateRule` (`server/src/services/alert-evaluator.ts`) + `createAlertEngine().tick()` (`alert-engine.ts`) run on startup + each heartbeat scheduler tick; edge-trigger + 6h cooldown via `alert_rules.last_triggered_at` (migration 0096); `GET /api/alerts/:companyId/events` + "Triggered alerts" UI section. 12 tests pass. Deferred follow-ups: agent auto-dispatch on fire (`rule.agentId`), notification delivery (`alert_events.notified`).
 2. ⏳ **Market Routine Builder** — visual builder for recurring agent jobs (routines + cron triggers).
 3. ⏳ **Bring-your-own-keys onboarding wizard** — guided multi-step UI over the existing api-keys API.
 4. ⏳ **Sample/mock subscription onboarding** — simulate the subscribe/upgrade flow WITHOUT real Stripe (no Stripe setup yet); swappable for real billing later.
