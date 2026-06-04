@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, NavLink, useLocation } from "@/lib/router";
+import { Link, NavLink, useLocation, useNavigate } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MoreHorizontal,
@@ -10,6 +10,7 @@ import {
   PlayCircle,
   Plus,
   Users,
+  UserPlus,
 } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
@@ -43,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Agent } from "@paperclipai/shared";
+import { HireAnalystDialog } from "./HireAnalystDialog";
 
 const AGENT_SORT_CHOICES: SidebarSectionRadioChoice[] = [
   { value: "top", label: "Top" },
@@ -213,11 +215,13 @@ function SidebarAgentItem({
 export function SidebarAgents() {
   const [open, setOpen] = useState(true);
   const [pendingAgentIds, setPendingAgentIds] = useState<Set<string>>(() => new Set());
+  const [hireDialogOpen, setHireDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const { openNewAgent } = useDialogActions();
   const { isMobile, setSidebarOpen } = useSidebar();
   const { pushToast } = useToastActions();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const { data: agents } = useQuery({
@@ -386,44 +390,68 @@ export function SidebarAgents() {
   );
 
   return (
-    <SidebarSection
-      label="Your Analysts"
-      collapsible={{ open, onOpenChange: setOpen }}
-      headerAction={{
-        ariaLabel: "New agent",
-        icon: Plus,
-        onClick: openNewAgent,
-      }}
-      menu={{
-        ariaLabel: "Agents section actions",
-        actions: [
-          { type: "item", label: "Browse agents", icon: Users, href: "/agents/all" },
-          { type: "separator" },
-        ],
-        radioLabel: "Agent sort",
-        radioChoices: AGENT_SORT_CHOICES,
-        radioValue: sortMode,
-        onRadioValueChange: persistSortMode,
-      }}
-    >
-      {sortedAgents.map((agent: Agent) => {
-        const runCount = liveCountByAgent.get(agent.id) ?? 0;
-        return (
-          <SidebarAgentItem
-            key={agent.id}
-            activeAgentId={activeAgentId}
-            activeTab={activeTab}
-            agent={agent}
-            disabled={pendingAgentIds.has(agent.id)}
-            isMobile={isMobile}
-            leaving={agentLeaving(agent)}
-            onLeaveAgent={leaveAgent}
-            onPauseResume={(targetAgent, action) => pauseResumeAgent.mutate({ agent: targetAgent, action })}
-            runCount={runCount}
-            setSidebarOpen={setSidebarOpen}
-          />
-        );
-      })}
-    </SidebarSection>
+    <>
+      <SidebarSection
+        label="Your Analysts"
+        collapsible={{ open, onOpenChange: setOpen }}
+        headerAction={{
+          ariaLabel: "New agent",
+          icon: Plus,
+          onClick: openNewAgent,
+        }}
+        menu={{
+          ariaLabel: "Agents section actions",
+          actions: [
+            { type: "item", label: "Hire an Analyst", icon: UserPlus, onSelect: () => setHireDialogOpen(true) },
+            { type: "item", label: "Browse agents", icon: Users, href: "/agents/all" },
+            { type: "separator" },
+          ],
+          radioLabel: "Agent sort",
+          radioChoices: AGENT_SORT_CHOICES,
+          radioValue: sortMode,
+          onRadioValueChange: persistSortMode,
+        }}
+      >
+        {sortedAgents.map((agent: Agent) => {
+          const runCount = liveCountByAgent.get(agent.id) ?? 0;
+          return (
+            <SidebarAgentItem
+              key={agent.id}
+              activeAgentId={activeAgentId}
+              activeTab={activeTab}
+              agent={agent}
+              disabled={pendingAgentIds.has(agent.id)}
+              isMobile={isMobile}
+              leaving={agentLeaving(agent)}
+              onLeaveAgent={leaveAgent}
+              onPauseResume={(targetAgent, action) => pauseResumeAgent.mutate({ agent: targetAgent, action })}
+              runCount={runCount}
+              setSidebarOpen={setSidebarOpen}
+            />
+          );
+        })}
+        {selectedCompanyId && (
+          <button
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-[13px] text-muted-foreground/70 hover:text-foreground hover:bg-accent/50 transition-colors"
+            onClick={() => setHireDialogOpen(true)}
+          >
+            <UserPlus className="h-3.5 w-3.5 shrink-0" />
+            <span>Hire an Analyst</span>
+          </button>
+        )}
+      </SidebarSection>
+
+      {selectedCompanyId && (
+        <HireAnalystDialog
+          open={hireDialogOpen}
+          onOpenChange={setHireDialogOpen}
+          companyId={selectedCompanyId}
+          onHired={(agentId) => {
+            navigate(`/agents/${agentId}`);
+            if (isMobile) setSidebarOpen(false);
+          }}
+        />
+      )}
+    </>
   );
 }
