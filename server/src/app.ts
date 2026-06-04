@@ -43,6 +43,7 @@ import { pluginRoutes } from "./routes/plugins.js";
 import { adapterRoutes } from "./routes/adapters.js";
 import { pluginUiStaticRoutes } from "./routes/plugin-ui-static.js";
 import { createMarketRouter } from "./routes/market.js";
+import { createMarketKeyResolver } from "./services/market-key-resolver.js";
 import { createBrokerRouter } from "./routes/broker.js";
 import { createWatchlistRouter } from "./routes/watchlist.js";
 import { createAlertsRouter } from "./routes/alerts.js";
@@ -322,7 +323,23 @@ export async function createApp(
     ),
   );
   const appConfig = loadConfig();
+  const secrets = secretService(db);
   const marketSubscriptionService = createSubscriptionService(db, { isCloudMode: appConfig.isCloudMode });
+  const resolveMarketCompanyId = (req: { actor: any }): string | undefined => {
+    const companyIds = Array.isArray(req.actor.companyIds) ? req.actor.companyIds : undefined;
+    return req.actor.companyId ?? companyIds?.[0];
+  };
+  const readCompanyKey = async (companyId: string, name: string): Promise<string | null> => {
+    try {
+      const secret = await secrets.getByName(companyId, name);
+      if (!secret) return null;
+      const value = await secrets.resolveSecretValue(companyId, secret.id, "latest");
+      return value ?? null;
+    } catch (err) {
+      logger.debug({ err, companyId, name }, "per-company market key read failed; falling back to global");
+      return null;
+    }
+  };
   api.use('/market', createMarketRouter({
     // Resolve the caller's tier per request. Market routes carry no companyId in
     // the path; the caller's company comes from the authenticated actor.
@@ -333,7 +350,7 @@ export async function createApp(
       // we tier against their first membership. This is a deliberate, conservative
       // heuristic — refine once market requests become company-scoped.
       const companyIds = Array.isArray(req.actor.companyIds) ? req.actor.companyIds : undefined;
-      const companyId = req.actor.companyId ?? companyIds?.[0];
+      const companyId = resolveMarketCompanyId(req);
       if (!req.actor.companyId && companyIds && companyIds.length > 1) {
         logger.debug(
           { companyIds, chosenCompanyId: companyId },
@@ -344,15 +361,14 @@ export async function createApp(
       if (!companyId) return 'free';
       return marketSubscriptionService.tierForCompany(companyId);
     },
-    // Self-host uses the global config keys. In cloud mode we currently also fall
-    // back to global config keys; per-company stored data keys (secrets named
-    // `data.alpha_vantage` / `data.polygon`) require a plaintext secret read-path
-    // that the secrets service does not yet expose.
-    // TODO(plan5): resolve per-company data keys once the secrets read-path lands.
-    // Tier gating still applies: free tier gets {} regardless of these keys.
-    resolveKeys: async () => ({
-      alphaVantageApiKey: appConfig.alphaVantageApiKey,
-      polygonApiKey: appConfig.polygonApiKey,
+    resolveKeys: createMarketKeyResolver({
+      isCloudMode: appConfig.isCloudMode,
+      globalKeys: {
+        alphaVantageApiKey: appConfig.alphaVantageApiKey,
+        polygonApiKey: appConfig.polygonApiKey,
+      },
+      readCompanyKey,
+      resolveCompanyId: resolveMarketCompanyId,
     }),
   }));
   api.use('/broker', createBrokerRouter(db, {
@@ -363,7 +379,6 @@ export async function createApp(
   api.use('/watchlist', createWatchlistRouter(db))
   api.use('/alerts', createAlertsRouter(db))
   api.use('/research', createResearchRouter(db))
-  const secrets = secretService(db);
   const apiKeySecretsProvider = getConfiguredSecretProvider();
   const apiKeySecretsAdapter = {
     setSecret: async (companyId: string, name: string, value: string) => {
