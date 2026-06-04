@@ -173,12 +173,27 @@ We don't delete Paperclip features, but some make less sense for a single-user f
 
 ---
 
-## 7. Open questions (resolve before they block a plan)
+## 7. Decisions & open questions
 
-1. **License: AGPL (spec) vs MIT (owner said in chat)?** Must confirm before publishing license terms.
-2. **Alert firing:** the alert engine (`alert_rules` → `alert_events`) isn't built. Schedule it (own plan or fold into Plan 5/6?).
-3. **Which Paperclip pages to hide** for the finance product (Org chart, Projects, Approvals, Execution Workspaces, etc.)?
-4. **Repo name vs npm/CLI:** repo is `SamyR19/stockpilot`; product "StockPilot AI"; npm scope `@stockpilotai`; some packages still `@paperclipai/*`. Confirm whether to rename packages.
+**Resolved (owner, 2026-06-03):**
+- ✅ **License = MIT** (not AGPL). Apply across repo (LICENSE file, package.json `license` fields, headers as needed).
+- ✅ **Finish renaming** `@paperclipai/*` → `@stockpilotai/*` everywhere (packages, imports, scopes). Repo `SamyR19/stockpilot`, product "StockPilot AI".
+
+**Still open:**
+- **Which Paperclip pages to hide** for the finance product (Org chart, Projects, Approvals, Execution Workspaces, etc.)? — needs owner pass.
+
+## 7b. Active work queue (owner-requested 2026-06-03, agent-driven, one plan at a time)
+
+Build in this order; write each plan with `superpowers:writing-plans`, execute with `superpowers:subagent-driven-development`. Pause for any owner action (infra/keys/decisions).
+
+1. ⏳ **Alert evaluation engine** — `alert_rules` → `alert_events` actually fire (scheduler-driven).
+2. ⏳ **Market Routine Builder** — visual builder for recurring agent jobs (routines + cron triggers).
+3. ⏳ **Bring-your-own-keys onboarding wizard** — guided multi-step UI over the existing api-keys API.
+4. ⏳ **Sample/mock subscription onboarding** — simulate the subscribe/upgrade flow WITHOUT real Stripe (no Stripe setup yet); swappable for real billing later.
+5. ⏳ **Per-company data-key resolution** into the market client (the `TODO(plan5)` in `server/src/app.ts`).
+6. ⏳ **MIT license** application across the repo.
+7. ⏳ **Finish `@paperclipai/*` → `@stockpilotai/*` rename.**
+8. ⏳ **Paperclip codebase deep-dive doc.**
 
 ---
 
