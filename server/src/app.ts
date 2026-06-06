@@ -47,6 +47,7 @@ import { createMarketKeyResolver } from "./services/market-key-resolver.js";
 import { createBrokerRouter } from "./routes/broker.js";
 import { createWatchlistRouter } from "./routes/watchlist.js";
 import { createAlertsRouter } from "./routes/alerts.js";
+import { createPortfolioRouter } from "./routes/portfolio.js";
 import { createResearchRouter } from "./routes/research.js";
 import { createApiKeysRouter } from "./routes/api-keys.js";
 import { secretService } from "./services/index.js";
@@ -378,6 +379,7 @@ export async function createApp(
   }));
   api.use('/watchlist', createWatchlistRouter(db))
   api.use('/alerts', createAlertsRouter(db))
+  api.use('/portfolio', createPortfolioRouter(db))
   api.use('/research', createResearchRouter(db))
   const apiKeySecretsProvider = getConfiguredSecretProvider();
   const apiKeySecretsAdapter = {
