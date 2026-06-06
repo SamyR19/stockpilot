@@ -687,6 +687,13 @@
       "when": 1780547200000,
       "tag": "0097_enable_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1780650000000,
+      "tag": "0098_portfolio_holdings",
+      "breakpoints": true
     }
   ]
 }

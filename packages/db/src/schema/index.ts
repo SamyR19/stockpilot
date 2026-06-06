@@ -88,4 +88,5 @@ export { researchReports } from "./research_reports.js";
 export { alertRules } from "./alert_rules.js";
 export { alertEvents } from "./alert_events.js";
 export { brokerConnections } from "./broker_connections.js";
+export { portfolioHoldings } from "./portfolio_holdings.js";
 export { subscriptions } from "./subscriptions.js";
