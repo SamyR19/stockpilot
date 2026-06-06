@@ -49,6 +49,7 @@ import { createWatchlistRouter } from "./routes/watchlist.js";
 import { createAlertsRouter } from "./routes/alerts.js";
 import { createPortfolioRouter } from "./routes/portfolio.js";
 import { createResearchRouter } from "./routes/research.js";
+import { createAccountRouter } from "./routes/account.js";
 import { createApiKeysRouter } from "./routes/api-keys.js";
 import { secretService } from "./services/index.js";
 import { createSubscriptionService } from "./services/subscription.js";
@@ -381,6 +382,7 @@ export async function createApp(
   api.use('/alerts', createAlertsRouter(db))
   api.use('/portfolio', createPortfolioRouter(db))
   api.use('/research', createResearchRouter(db))
+  api.use('/account', createAccountRouter(db))
   const apiKeySecretsProvider = getConfiguredSecretProvider();
   const apiKeySecretsAdapter = {
     setSecret: async (companyId: string, name: string, value: string) => {
