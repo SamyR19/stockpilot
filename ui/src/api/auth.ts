@@ -131,4 +131,17 @@ export const authApi = {
   signOut: async () => {
     await authPost("/sign-out", {});
   },
+
+  deleteAccount: async (): Promise<{ ok: true; deletedCompanies: number }> => {
+    const res = await fetch("/api/account", {
+      method: "DELETE",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+    });
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) {
+      throw extractAuthError(payload as AuthErrorBody, res.status);
+    }
+    return payload as { ok: true; deletedCompanies: number };
+  },
 };

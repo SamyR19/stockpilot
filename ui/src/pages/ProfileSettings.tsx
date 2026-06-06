@@ -7,10 +7,19 @@ import { assetsApi } from "@/api/assets";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { queryKeys } from "../lib/queryKeys";
+import { useToastActions } from "../context/ToastContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function deriveInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -22,11 +31,14 @@ export function ProfileSettings() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { selectedCompanyId, selectedCompany } = useCompany();
   const queryClient = useQueryClient();
+  const { pushToast } = useToastActions();
   const avatarInputId = useId();
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const sessionQuery = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
@@ -114,6 +126,23 @@ export function ProfileSettings() {
     },
     onError: (error) => {
       setActionError(error instanceof Error ? error.message : "Failed to remove avatar.");
+    },
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => {
+      await authApi.deleteAccount();
+      await authApi.signOut();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
+    },
+    onError: (error) => {
+      pushToast({
+        title: "Couldn't delete account",
+        body: error instanceof Error ? error.message : "An unexpected error occurred.",
+        tone: "error",
+      });
+      setDeleteDialogOpen(false);
+      setDeleteConfirmText("");
     },
   });
 
@@ -268,6 +297,87 @@ export function ProfileSettings() {
           </div>
         </form>
       </section>
+
+      {/* Danger Zone */}
+      <section className="space-y-4">
+        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-5">
+          <h2 className="text-base font-semibold text-destructive">Danger Zone</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Permanently delete your account and the workspaces you solely own. This cannot be undone.
+          </p>
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => {
+                setDeleteConfirmText("");
+                setDeleteDialogOpen(true);
+              }}
+            >
+              <Trash2 className="size-4" />
+              Delete account
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
+        if (!deleteAccountMutation.isPending) {
+          setDeleteDialogOpen(open);
+          if (!open) setDeleteConfirmText("");
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete account</DialogTitle>
+            <DialogDescription>
+              This will permanently delete your account, all your data, and any workspaces you solely own — including all their issues, agents, routines, and history. <strong>This action cannot be undone.</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="delete-confirm-input">Type <strong>DELETE</strong> to confirm</Label>
+            <Input
+              id="delete-confirm-input"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              disabled={deleteAccountMutation.isPending}
+              autoComplete="off"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setDeleteConfirmText("");
+              }}
+              disabled={deleteAccountMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deleteConfirmText !== "DELETE" || deleteAccountMutation.isPending}
+              onClick={() => deleteAccountMutation.mutate()}
+            >
+              {deleteAccountMutation.isPending ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                <>
+                  <Trash2 className="size-4" />
+                  Delete my account
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
