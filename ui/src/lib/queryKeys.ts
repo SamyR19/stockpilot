@@ -217,6 +217,9 @@ export const queryKeys = {
     connections: (companyId: string) => ["broker", "connections", companyId] as const,
     portfolio: (companyId: string) => ["broker", "portfolio", companyId] as const,
   },
+  portfolio: {
+    holdings: (companyId: string) => ["portfolio", companyId, "holdings"] as const,
+  },
   watchlist: {
     list: (companyId: string) => ["watchlist", companyId] as const,
   },
