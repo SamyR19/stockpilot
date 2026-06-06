@@ -200,6 +200,11 @@ Build in this order; write each plan with `superpowers:writing-plans`, execute w
 7. ⏸️ **Finish `@paperclipai/*` → `@stockpilotai/*` rename** — **DEFERRED** (owner, 2026-06-03; final product name not yet locked + high risk on the live deployment). See §7 decisions.
 8. ✅ **Paperclip codebase deep-dive doc** — DONE. `docs/stockpilot/PAPERCLIP_DEEP_DIVE.md` (411 lines, 12 sections: request lifecycle, config/modes, data model, run engine, plugins, adapters, auth/secrets, realtime, frontend, build/test, StockPilot additions, "where do I change X?" map). Complements `PAPERCLIP_REFERENCE.md`.
 
+## 7d. Finance UX upgrades (owner-directed 2026-06-05)
+
+- ✅ **Manual portfolio entry** — DONE. New `portfolio_holdings` table (migration 0098) + `/api/portfolio/:companyId/holdings` CRUD + a "Your holdings" section on `Portfolio.tsx` (add/edit/delete; live price, market value, gain/loss from market quotes). Works without a broker connection.
+- ⏳ **Watchlist upgrade** (live price/%chg/sparkline + inline alerts), **Reports library upgrade** (search/filter + reading view), **Delete account** (Settings danger zone — destructive). Multi-broker via aggregator (SnapTrade/Plaid) = later (needs 3rd-party setup like Stripe).
+
 ## 7c. Active initiatives (owner-directed 2026-06-03)
 
 > Standing rule: planning/specs OK to do anytime, but **get owner say-so before executing significant/drastic changes** (see memory). Owner cares a lot about **security** — RLS deny-all is enforced (migration 0097 + event trigger); re-run the Supabase security advisor after schema changes.
