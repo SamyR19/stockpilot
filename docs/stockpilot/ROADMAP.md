@@ -203,7 +203,10 @@ Build in this order; write each plan with `superpowers:writing-plans`, execute w
 ## 7d. Finance UX upgrades (owner-directed 2026-06-05)
 
 - ✅ **Manual portfolio entry** — DONE. New `portfolio_holdings` table (migration 0098) + `/api/portfolio/:companyId/holdings` CRUD + a "Your holdings" section on `Portfolio.tsx` (add/edit/delete; live price, market value, gain/loss from market quotes). Works without a broker connection.
-- ⏳ **Watchlist upgrade** (live price/%chg/sparkline + inline alerts), **Reports library upgrade** (search/filter + reading view), **Delete account** (Settings danger zone — destructive). Multi-broker via aggregator (SnapTrade/Plaid) = later (needs 3rd-party setup like Stripe).
+- ✅ **Watchlist upgrade** — DONE. Per-ticker sparkline (from `getHistory`), clearer price/change/%change (gain/loss color), and inline **"Set alert"** popover (creates a price/percent alert via `alertsApi.create`). `Watchlist.tsx`.
+- ✅ **Reports library upgrade** — DONE. Full-text search + recommendation filter chips (Buy/Hold/Sell/Watch) + a clean **reading-view modal** (clamped card preview → full report in a dialog). `Reports.tsx`.
+- ✅ **Delete account** — DONE (destructive, careful). `server/src/services/account-deletion.ts` (transactional; deletes the current user's auth rows + memberships/roles/prefs + **only** the workspaces they *solely own* — sole-owner guard never nukes shared workspaces; 4 tests) + `DELETE /api/account` + a **Danger Zone** on `ProfileSettings.tsx` with type-`DELETE`-to-confirm → sign-out.
+- ⏳ **Multi-broker connections** via aggregator (SnapTrade or Plaid) — later (needs 3rd-party account/keys like Stripe).
 
 ## 7c. Active initiatives (owner-directed 2026-06-03)
 
